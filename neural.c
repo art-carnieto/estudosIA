@@ -55,6 +55,12 @@ Nivel* criarNivel(int qtde){
 	return n;
 }
 
+Neuronio* criarNeuronio(int x){
+	Neuronio* n = (Neuronio*) malloc(sizeof(Neuronio));
+	n->valor = x;
+	n->ligacoes = (Axonio*) malloc(sizeof(Axonio))
+}
+
 
 
 int main(){
