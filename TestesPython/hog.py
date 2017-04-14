@@ -20,7 +20,7 @@ except OSError as err:
 # print("arquivos:")
 # print(arquivosPasta)
 # print("")
-arquivosImagem = filter(lambda k: '.png' in k, arquivosPasta)
+arquivosImagem = list(filter(lambda k: '.png' in k, arquivosPasta))
 # print("somente imagens:")
 # print(arquivosImagem)
 
@@ -28,10 +28,13 @@ arquivosImagem = filter(lambda k: '.png' in k, arquivosPasta)
 # neste site possuem outros algoritmos de deteccao de borda:
 # http://scikit-image.org/docs/dev/auto_examples/edges/plot_edge_filter.html
 
+if len(arquivosImagem) == 0:
+	print("Pasta selecionada nao contem imagens .png")
+
 for imagem in arquivosImagem:
 	print("Processando imagem " + imagem)
 	try:
-		A = color.rgb2gray(imread(caminhoEntrada + "/" + imagem))
+		A = color.rgb2gray(imread(os.path.join(caminhoEntrada, imagem)))
 	except IOError as err:
 		print("Erro na leitura da imagem ", imagem, ": ", err)
 	a1 = roberts(A)
@@ -52,14 +55,14 @@ for imagem in arquivosImagem:
 	# print("saida = ",saida)
 
 	try:
-		caminhoSaida = caminhoEntrada + "/HOG"
+		caminhoSaida = os.path.join(caminhoEntrada,"HOG")
 		if not os.path.exists(caminhoSaida):
 			os.makedirs(caminhoSaida)
 	except OSError as err:
 		print("Erro de acesso a pasta de saida: ", err)
 
 	try:
-		f = open(str(caminhoSaida + "/" + saida), 'w')
+		f = open(os.path.join(caminhoSaida, saida), 'w')
 		f.write(str(v))
 	except IOError as err:
 		print("Erro na escrita do arquivo ", saida, ": ", err)
