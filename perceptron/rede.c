@@ -39,14 +39,14 @@ void setaFxDegrau(int x){
 	}
 }
 
-float fxAtivacaoDegrau(valor delta,valor nivel){
-	if(nivel>delta) return valorAlto;
-	else /*(nivel<delta)*/ return valorBaixo;
+float fxAtivacaoDegrau(valor theta,valor Valor){
+	if(Valor>theta) return valorAlto;
+	else /*(Valor<theta)*/ return valorBaixo;
 }
 
 //pensar em mudar o preenchimento base dos pesos
 float geraValorDefault(int linha,int coluna){
-	return 1.;
+	return 0.95;
 }
 
 float geraValor(int linha,int coluna){
@@ -116,7 +116,7 @@ Rede* criarRede(int* niveis,int tam){
 }
 
 // metodos de perceptron simples
-void PS(Rede* r,int epocas, valor limiarErro){
+void PS(Rede* r,int epocas, valor limiarErro, valor taxaDeAprendizado, Matriz* target){
 	int epoca;
 	for(epoca = 0; epoca < epocas ; epoca++){
 		
@@ -128,11 +128,13 @@ void PS(Rede* r,int epocas, valor limiarErro){
 		int i = 0;
 		//pode dar erro
 		//aplicar função de ativação
-		for (i = 1; i < r->Y->colunas; i++) setaMatriz(r->Y,1,i,retornaMatriz(r->Y,1,i,NULL) + r->by);
+		for (i = 1; i < r->Y->colunas; i++) setaMatriz(r->Y,1,i,fxAtivacaoDegrau(1,retornaMatriz(r->Y,1,i,NULL) + r->by));
 
 		/**
 			calculo do erro
 		*/
+
+		
 
 
 		/**
@@ -143,7 +145,7 @@ void PS(Rede* r,int epocas, valor limiarErro){
 }
 
 //multilayer perceptron
-void MLP(Rede* r,int epocas, valor limiarErro){
+void MLP(Rede* r,int epocas, valor limiarErro, valor taxaDeAprendizado, Matriz* target){
 
 
 }
@@ -159,7 +161,19 @@ int main(){
 
 	//printf("l1: %i l2: %i l3: %i\n",r->X->linhas,r->Z->linhas,r->Y->linhas);
 
-	
+	Matriz* targetOR = criaMatriz(4,1);
+
+	setaValor(targetOR,1,1,0);
+	setaValor(targetOR,2,1,0);
+	setaValor(targetOR,3,1,0);
+	setaValor(targetOR,4,1,1);
+
+	Matriz* targetAND = criaMatriz(4,1);
+
+	setaValor(targetAND,1,1,0);
+	setaValor(targetAND,2,1,1);
+	setaValor(targetAND,3,1,1);
+	setaValor(targetAND,4,1,1);
 
 	return 0;
 }
