@@ -44,6 +44,7 @@ float fxAtivacaoDegrau(valor delta,valor nivel){
 	else /*(nivel<delta)*/ return valorBaixo;
 }
 
+//pensar em mudar o preenchimento base dos pesos
 float geraValorDefault(int linha,int coluna){
 	return 1.;
 }
@@ -114,10 +115,34 @@ Rede* criarRede(int* niveis,int tam){
 	return r;
 }
 
+// metodos de perceptron simples
 void PS(Rede* r,int epocas, valor limiarErro){
-	
+	int epoca;
+	for(epoca = 0; epoca < epocas ; epoca++){
+		
+		/**
+			execução da rede
+		*/
+		
+		r->Y = multMatriz(r->X, r->v);
+		int i = 0;
+		//pode dar erro
+		//aplicar função de ativação
+		for (i = 1; i < r->Y->colunas; i++) setaMatriz(r->Y,1,i,retornaMatriz(r->Y,1,i,NULL) + r->by);
+
+		/**
+			calculo do erro
+		*/
+
+
+		/**
+			back propagation
+		*/
+
+	}
 }
 
+//multilayer perceptron
 void MLP(Rede* r,int epocas, valor limiarErro){
 
 
@@ -128,11 +153,13 @@ void MLP(Rede* r,int epocas, valor limiarErro){
 
 int main(){
 
-	int redeDefault[] = {3,5,4};
+	int redeDefault[] = {2,4};
 
-	Rede* r = criarRede(redeDefault,3);
+	Rede* r = criarRede(redeDefault,2);
 
-	printf("l1: %i l2: %i l3: %i\n",r->X->linhas,r->Z->linhas,r->Y->linhas);
+	//printf("l1: %i l2: %i l3: %i\n",r->X->linhas,r->Z->linhas,r->Y->linhas);
+
+	
 
 	return 0;
 }

@@ -38,7 +38,7 @@ bool setaValor(Matriz* m,int linha, int coluna, valor novoValor){
 }
 
 valor retornaValor(Matriz* m,int linha, int coluna, bool* ok){
-
+	//lembrar que *ok não pode ser null, pensar em outra solução
 	if(m->linhas < linha || linha < 1){	*ok = false; return 0.;	}
 	if(m->colunas < coluna || coluna < 1){ *ok = false;	return 0.; }
 	/** convenção da matriz */
