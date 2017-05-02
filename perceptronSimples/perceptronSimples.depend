@@ -1,5 +1,0 @@
-# depslib dependency file v1.0
-1491137684 source:/home/arthur/SI/IA/PerceptronSimples/perceptronSimples/main.c
-	<stdio.h>
-	<malloc.h>
-
