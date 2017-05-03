@@ -21,7 +21,7 @@ except OSError as err:
 arquivosImagem = list(filter(lambda k: '.png' in k, arquivosPasta))
 
 # ppc = [128, 64, 32, 16, 8, 4, 2] # ppc = pixels por celula, para varios casos
-ppc = [16] # ppc = pixels por celula, somente para 16x16
+ppc = [32] # ppc = pixels por celula, somente para 16x16
 
 if len(arquivosImagem) == 0:
 	print("Pasta selecionada nao contem imagens .png")
@@ -80,6 +80,8 @@ for i in ppc:
 
 		try:
 			f = open(os.path.join(caminhoSaida, saida), 'w')
-			f.write(str(v)[2:-1])	# tem esse corte [2:-1] para tirar '[' e ']' da saida
+			# f.write(str(v)[2:-1])	# tem esse corte [2:-1] para tirar '[' e ']' da saida
+			for x in np.nditer(v):
+				f.write(str(x) + "\n")
 		except IOError as err:
 			print("Erro na escrita do arquivo ", saida, ": ", err)
