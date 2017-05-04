@@ -1,3 +1,4 @@
+#coding: utf-8
 # script para passar todas as imagens no filtro
 # HOG e escreve-las em uma pasta na saida
 
