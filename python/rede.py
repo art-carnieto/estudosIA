@@ -73,6 +73,8 @@ entrada = np.array( [  [0., 0., 1.],
 
 nroNeuronios = 5	#definido pelo usuario
 
+np.random.seed(1)
+
 #ultima linha = bias
 pesos1 = np.random.rand(3,nroNeuronios)
 
@@ -93,7 +95,7 @@ pesos2 = np.random.rand( [ [],
 						   [],
 						   []])
 """
-
+# saidaEsperada = np.array( [0., 1., 1., 0.] )
 
 saidaEsperada = np.array( [ [0.],
 							[1.],
@@ -105,15 +107,15 @@ taxaAprendizado = 0.5
 nroEpocas = 1
 
 print("")
-print("Entrada = ")
+print("Entrada (X) = ")
 print(entrada)
 
 print("")
-print("pesos1 = ")
+print("pesos1 (v) = ")
 print(pesos1)
 
 print("")
-print("taxaAprendizado = " + str(taxaAprendizado))
+print("taxaAprendizado (α)= " + str(taxaAprendizado))
 print("nroEpocas = " + str(nroEpocas))
 
 for epoca in range(nroEpocas):
@@ -125,10 +127,8 @@ for epoca in range(nroEpocas):
 	###########FEED FORWARD###########
 
 
-
-
 	escondida = np.dot(entrada, pesos1)
-	print("escondida depois da multiplicacao:")
+	print("escondida depois da multiplicacao (Z_in):")
 	print(escondida)
 
 	escondidaFx = escondida.copy()
@@ -143,83 +143,91 @@ for epoca in range(nroEpocas):
 	print("************************")
 
 	print("")
-	print("escondida depois de ativar:")
+	print("escondida depois de ativar (Z):")
 	print(escondidaFx)
 
-
-	v = np.array( [ [1.],
-					[1.],
-					[1.],
-					[1.]])
-
-	escondidaFx = np.append(escondidaFx, v, axis=1)
+	# adicionando uma nova coluna no final da camada escondida = bias
+	aux = np.zeros((escondida.shape[0], escondida.shape[1]+1))
+	aux[:,:-1] = escondidaFx
+	aux[:,-1:] = 1.
+	escondidaFx = aux
 	
 	print("")
-	print("escondida depois de adicionar o bias:")
+	print("escondida depois de adicionar o bias (Z) :")
 	print(escondidaFx)
 
 	print("")
-	print("pesos2 = ")
+	print("pesos2 (w) = ")
 	print(pesos2)
 
 	saida = np.dot(escondidaFx, pesos2)
 	print("")
-	print("saida = ")
+	print("saida (Y_in) = ")
 	print(saida)
 	
 	saidaAtivada = saida.copy()
 
 	print("")
 	print("FUNCAO ATIVACAO SAIDA:")
+
+	'''
 	j = 0
 	for i in np.nditer(saidaAtivada):
 		print("   i = " + str(i) + "\tj = " + str(j) + "\tsig = " + str(sigmoid(i)))
 		saidaAtivada.itemset(j, sigmoid(i))
 		j += 1
+	'''
+
+	for i in range(saidaAtivada.size):
+		saidaAtivada[i] = sigmoid(saidaAtivada[i])
+
 	print("************************")
 
 	print("")
-	print("saida depois de ativar:")
+	print("saida ativada (Y) :")
 	print(saidaAtivada)
 
 
+	###########CALCULO DO ERRO###########
 
+	calcErro = saidaEsperada - saidaAtivada
 
+	print("")
+	print("calcErro antes de derivar (δ = T - Y) : ")
+	print(calcErro)
+
+	print("")
+	print("saida esperada")
+	print(saidaEsperada)
+
+	print("")
+	print("calcErro FINAL: (δ = (T - Y)*sig'(Y_in)):")
+	
+	for i in range(calcErro.size):
+		calcErro[i] = calcErro[i] * derSigmoid(saida[i])
+
+	print(calcErro)
 
 	###########BACK PROPAGATION###########
 
+	escondidaTransposta = np.transpose(escondidaFx.copy())	
+	multiDePropagacao = np.dot(escondidaTransposta,calcErro)
+	deltaW = taxaAprendizado * multiDePropagacao
 
+	print("--------------")
+	print(pesos2)
 
-
-
-	calcErro = np.subtract(saidaEsperada, saida)
-	print("")
-	print("calcErro antes de derivar = ")
-	print(calcErro)
-
-	print("")
-	print("FUNCAO DERIVADA DA ATIVACAO:")
-	j = 0
-	for i in np.nditer(calcErro):
-		print("   i = " + str(i) + "\tj = " + str(j) + "\tsaidaJ = " + str(saida[j]) + "\tderSig = " + str(derSigmoid(saida[j])))
-		calcErro.itemset(j, i*derSigmoid(saida[j]))
-		j += 1
-	print("************************")
-
-	print("")
-	print("calcErro FINAL:")
-	print(calcErro)
-
-	for i in range(calcErro.size):
-		calcErro.itemset(i, calcErro[i]*taxaAprendizado)
-
-	print("")
-	print("calcErro depois de multiplicar por alpha:")
-	print(calcErro)
-
-	pesos2 = np.transpose(pesos2)
+	pesos2 = pesos2 + deltaW
 	
+	print("--------------")
+	print(pesos2)
+
+
+
+
+	'''
 	deltaW = np.dot(calcErro, pesos2)
 	print("")
 	print("deltaW:")
 	print(deltaW)
+	'''
