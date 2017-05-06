@@ -8,17 +8,19 @@ def derSigmoid(x):
 
 def MLP(entrada,taxaDeAprendizado,epocas,erroMaximo,target,nroNeuronios):
     
-    X = np.copy(entrada)
+    if len(entrada.shape) == 1:
+        entrada.shape = (entrada.shape[0],1)
+    if len(target.shape) == 1:
+        target.shape = (target.shape[0],1)
 
-    T = np.copy(target)
+    X = np.copy(np.transpose(entrada.copy()))
+
+    T = np.copy(np.transpose(target.copy()))
 
     np.random.seed(1)
     #semente
     
-    if len(X.shape) == 1:
-        X.shape = (X.shape[0],1)
-    if len(T.shape) == 1:
-        T.shape = (T.shape[0],1)
+    
 
     # randomly initialize our weights with mean 0
     #preenchimento
@@ -72,7 +74,7 @@ saidaEsperada = np.array( [ [0.],
                             [0.]] )
 '''
 
-arquivo = "/home/arthur/SI/IA/EP/dataset1/treinamento/HOG 32/train_5a_00000.txt"
+arquivo = "/home/mint/Documents/EP IA/estudosIA/python/train_5a_00000.txt"
 '''
 53 = S
 58 = X
@@ -82,6 +84,8 @@ print("\tProcessando arquivo " + arquivo)
     
 entrada = np.loadtxt(arquivo, dtype='float', delimiter="\n")
 entrada = np.transpose(entrada) #transpoe de uma matriz linha para uma matriz coluna
+
+print(entrada.shape)
 
 alfa = 0.4
 
