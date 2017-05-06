@@ -15,12 +15,19 @@ def MLP(entrada,taxaDeAprendizado,epocas,erroMaximo,target,nroNeuronios):
     np.random.seed(1)
     #semente
     
+    if len(X.shape) == 1:
+        X.shape = (X.shape[0],1)
+    if len(T.shape) == 1:
+        T.shape = (T.shape[0],1)
+
     # randomly initialize our weights with mean 0
     #preenchimento
     #checar regra
     v = 2*np.random.random((X.shape[1],nroNeuronios)) - 1
     w = 2*np.random.random((nroNeuronios,T.shape[1])) - 1
 
+    print("v.shape = " + str(v.shape))
+    print("w.shape = " + str(w.shape))
     for epoca in xrange(epocas):
 
     	# Feed forward through layers 0, 1, and 2
@@ -52,7 +59,7 @@ def MLP(entrada,taxaDeAprendizado,epocas,erroMaximo,target,nroNeuronios):
 
 # MAIN
 
-
+'''
 #problema do XOR:
 entrada = np.array( [  [0., 0., 1.],
                        [0., 1., 1.], 
@@ -63,6 +70,18 @@ saidaEsperada = np.array( [ [0.],
                             [1.],
                             [1.],
                             [0.]] )
+'''
+
+arquivo = "/home/arthur/SI/IA/EP/dataset1/treinamento/HOG 32/train_5a_00000.txt"
+'''
+53 = S
+58 = X
+5a = Z
+'''
+print("\tProcessando arquivo " + arquivo)
+    
+entrada = np.loadtxt(arquivo, dtype='float', delimiter="\n")
+entrada = np.transpose(entrada) #transpoe de uma matriz linha para uma matriz coluna
 
 alfa = 0.4
 
@@ -71,6 +90,17 @@ epocas = 60000
 erroMaximo = 0.15
 
 nroNeuronios = 15
+
+'''
+Definicoes da saida:
+53 = S ==> saida esperada = (1, 0, 0)
+58 = X ==> saida esperada = (0, 1, 0)
+5a = Z ==> saida esperada = (0, 0, 1)
+'''
+
+saidaEsperada = np.array( [ [0.],
+                            [0.],
+                            [1.]] )
 
 saida = MLP(entrada,alfa,epocas,erroMaximo,saidaEsperada,nroNeuronios)
 
