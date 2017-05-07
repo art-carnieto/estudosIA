@@ -45,21 +45,26 @@ def MLP(entrada,taxaDeAprendizado,epocas,erroMaximo,nroNeuronios,target):
         if (epoca % 10000) == 0:
             print "Error:" + str(np.mean(np.abs(taxaDeErroSaida)))
             
-        #taxa de erro para os pesos w (∆w[j][k])
-        deltaY = taxaDeErroSaida * derSigmoid(Y)
-
-        #
-        erroZ = deltaY.dot(w.T)
+        #taxa de erro para segunda camada de pesos (δw[k])
+        taxaDeErroW = taxaDeErroSaida * derSigmoid(Y)
         
-        # in what direction is the target Z?
-        # were we really sure? if so, don't change too much.
-        deltaZ = erroZ * derSigmoid(Z)
+        #∆w[j][k] = α*δw[k]*Z[j]
+        deltaW = taxaDeAprendizado * taxaDeErroW * np.transpose(Z)
+
+        #erro para V (δv_inv[j] = ∑ k=1 δw[k]w[j][k] )
+        taxaDeErroEscondida = taxaDeErroW.dot(np.transpose(w))
+
+        # δv[j] = δv_in[j] f′(z_in[j])
+        taxaDeErroV = taxaDeErroEscondida * derSigmoid(Z)
+
+        #∆v[i][j] = αδ[j]
+        deltaV = taxaDeAprendizado * np.transpose(X) * taxaDeErroV
 
         #w[j][k](new) = w[j][k](old) + ∆w[j][k]
-        w += Z.T.dot(deltaY)
+        w += deltaW
 
         #v[i][j](new) = v[i][j](old) + ∆v[i][j]
-        v += X.T.dot(deltaZ)
+        v += deltaV
 
     return Y
 
@@ -81,7 +86,7 @@ saidaEsperada = np.array( [ [0.],
 dic1 = {'53': (1,0,0), '58': (0,1,0), '5a': (0,0,1)}    # dicionario 1 ==> para gerar a matriz T (target)
 dic2 = {(1,0,0) : 'S', (0,1,0) : 'X', (0,0,1) : 'Z'}    # dicionario 2 ==> para verificar depois de rodar a rede a resposta
 
-pasta = "/home/arthur/github/estudosIA/python/"
+pasta = "/home/mint/Documents/GIT/estudosIA/python"
 arquivo = "train_5a_00000.txt"
 print("\tProcessando arquivo " + arquivo)
     
