@@ -1,0 +1,11 @@
+###Extratores:
+HOG:
+http://scikit-image.org/docs/dev/auto_examples/features_detection/plot_hog.html
+http://scikit-image.org/docs/dev/api/skimage.feature.html#skimage.feature.hog
+
+LBP:
+http://www.pyimagesearch.com/2015/12/07/local-binary-patterns-with-python-opencv/
+http://scikit-image.org/docs/dev/api/skimage.feature.html#skimage.feature.local_binary_pattern
+
+###Rede Neural MLP:
+http://iamtrask.github.io/2015/07/12/basic-python-network/

@@ -1,20 +1,29 @@
 #coding: utf-8
-# script para passar todas as imagens no filtro
-# LBP e escreve-las em uma pasta na saida
-
+from skimage.io import imread
+from skimage import feature, color
 import numpy as np
-import matplotlib.pyplot as plt
-from skimage.io import imread, imshow
-from skimage.feature import local_binary_pattern
-from skimage import color
-from skimage.filters import roberts, sobel
 import os
 
-np.set_printoptions(threshold=np.nan) # corrige o tamanho maximo do print na saida de um ndarray
+def describe(image, numPoints, radius, eps=1e-7):
+		# compute the Local Binary Pattern representation
+		# of the image, and then use the LBP representation
+		# to build the histogram of patterns
+		lbp = feature.local_binary_pattern(image, numPoints,
+			radius, method="uniform")
+		(hist, _) = np.histogram(lbp.ravel(),
+			bins=np.arange(0, numPoints + 3),
+			range=(0, numPoints + 2))
+
+		# normalize the histogram
+		hist = hist.astype("float")
+		hist /= (hist.sum() + eps)
+
+		# return the histogram of Local Binary Patterns
+		return hist
 
 try:
 	# caminhoEntrada = os.getcwd() # os.getcwd ==> pasta atual do arquivo lbp.py
-	caminhoEntrada = "/home/juuullyanne/Área de Trabalho/IA/dataset1/treinamento" # pasta selecionada pelo usuario
+	caminhoEntrada = "/home/arthur/SI/IA/EP/dataset1/treinamento" # pasta selecionada pelo usuario
 	arquivosPasta = os.listdir(caminhoEntrada)
 except OSError as err:
 	print("Erro no acesso a pasta com as imagens de entrada: ",err)
@@ -24,22 +33,20 @@ arquivosImagem = list(filter(lambda k: '.png' in k, arquivosPasta))
 if len(arquivosImagem) == 0:
 	print("Pasta selecionada nao contem imagens .png")
 
+numPoints = 24
+radius = 8
+
 print("")
 print("Iniciando LBP")
 for imagem in arquivosImagem:
 	print("\tProcessando imagem " + imagem)
+
 	try:
 		A = color.rgb2gray(imread(os.path.join(caminhoEntrada, imagem)))
 	except IOError as err:
 		print("Erro na leitura da imagem ", imagem, ": ", err)
-	
-	# Filtros detectores de borda Roberts e Sobel:
-	# (podem ser tirados, o HOG consegue funcionar sem eles)
-	
-	# a1 = roberts(A) # algoritmo de Roberts para deteccao de borda
-	# a1 = sobel(A) # algoritmo de Sobel para deteccao de borda
-	
-	v = local_binary_pattern(A, 8, 64, method='default')
+
+	v = describe(A, numPoints, radius)
 
 	# trocando a extensao .png por .txt:
 	saida = imagem[:-3]

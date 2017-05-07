@@ -10,10 +10,11 @@
 
 import numpy as np
 import os
+from random import shuffle
 
 try:
 	# caminhoEntrada = os.getcwd() # os.getcwd ==> pasta atual do arquivo hog.py
-	caminhoEntrada = "/home/ubuntu/Downloads/dataset1/treinamento/HOG 32" # pasta selecionada pelo usuario
+	caminhoEntrada = "/home/arthur/SI/IA/EP/dataset1/treinamento/HOG 32" # pasta selecionada pelo usuario
 	arquivosPasta = os.listdir(caminhoEntrada)
 except OSError as err:
 	print("Erro no acesso a pasta com as imagens de entrada: ",err)
@@ -22,7 +23,7 @@ arquivosImagem = list(filter(lambda k: '.txt' in k, arquivosPasta))
 
 ordenados = sorted(arquivosImagem)
 
-arq = open("lista de arquivos.txt", "w")
+arq = open("lista_de_arquivos.txt", "w")
 
 for i in arquivosImagem:
 	arq.write(i + "\n")
@@ -48,8 +49,8 @@ fold5 = listaS[800:1000] + listaX[800:1000] + listaZ[800:1000]
 listaFolds = [fold1, fold2, fold3, fold4, fold5]
 exemplo = [0, 1, 2, 3, 4]
 
-arq = open("OPEN.txt", "w")
-
+arq = open("testeFolds.txt", "w")
+arq2 = open("testeShuffle.txt", "w")
 
 for i in range(5):
 	treinamento = []
@@ -67,3 +68,7 @@ for i in range(5):
 	# teste = lista de strings com os arquivos para testar depois de rodar o treinamento
 	# treinamento = lista de strings para rodar o treinamento da rede
 	# depois desses dois for ja pode usar o k fold na rede!
+
+	shuffle(treinamento) # embaralha os arquivos de treinamento
+	arq2.write("\ni = " + str(i) + "\n\n")
+	arq2.write(str(treinamento))
