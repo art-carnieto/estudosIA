@@ -136,15 +136,13 @@ print("Saida = ")
 print(saida)
 
 
-''' AINDA EM CONSTRUCAO
 print("")
 print("Saida arredondada = ")
 saidaArredondada = []
 for i in range(saida.size):
-    saidaArredondada[i] = round(saida[i], 0)
+    saidaArredondada.append(round(saida[0][i], 0))
     print(saidaArredondada[i])
 
 
 print("")
-print("Saida em letra = " + str(saida.ravel))
-'''
+print("Saida em letra = " + str(dic2[tuple(saidaArredondada)]))
