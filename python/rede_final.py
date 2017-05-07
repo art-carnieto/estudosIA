@@ -6,7 +6,10 @@ def sigmoid(x):
 def derSigmoid(x):
     return np.exp(x) / np.power((np.exp(x)+1),2)
 
-def MLP(entrada,taxaDeAprendizado,epocas,erroMaximo,target,nroNeuronios):
+def criaMatrizPesosDefault(linhas,colunas):
+	return np.random.random((linhas,colunas)) - 1
+
+def MLP(entrada,taxaDeAprendizado,epocas,erroMaximo,nroNeuronios,target):
     
     if len(entrada.shape) == 1:
         entrada.shape = (entrada.shape[0],1)
@@ -20,41 +23,40 @@ def MLP(entrada,taxaDeAprendizado,epocas,erroMaximo,target,nroNeuronios):
     np.random.seed(1)
     #semente
     
-    
-
-    # randomly initialize our weights with mean 0
     #preenchimento
     #checar regra
-    v = 2*np.random.random((X.shape[1],nroNeuronios)) - 1
-    w = 2*np.random.random((nroNeuronios,T.shape[1])) - 1
+    v = criaMatrizPesosDefault(X.shape[1],nroNeuronios)
+    w = criaMatrizPesosDefault(nroNeuronios,T.shape[1])
 
     print("v.shape = " + str(v.shape))
     print("w.shape = " + str(w.shape))
-    for epoca in xrange(epocas):
 
-    	# Feed forward through layers 0, 1, and 2
+    for epoca in xrange(epocas):
         
+        #calculo dos valores e ativação
         Z = sigmoid(np.dot(X,v))
         Y = sigmoid(np.dot(Z,w))
 
-        # how much did we miss the target value?
+        #erro (diferença entre o target)
         taxaDeErroSaida = T - Y
         
         if (epoca % 10000) == 0:
             print "Error:" + str(np.mean(np.abs(taxaDeErroSaida)))
             
-        # in what direction is the target value?
-        # were we really sure? if so, don't change too much.
+        #taxa de erro para os pesos w (∆w[j][k])
         deltaY = taxaDeErroSaida * derSigmoid(Y)
 
-        # how much did each Z value contribute to the Y error (according to the weights)?
+        #
         erroZ = deltaY.dot(w.T)
         
         # in what direction is the target Z?
         # were we really sure? if so, don't change too much.
         deltaZ = erroZ * derSigmoid(Z)
 
+        #w[j][k](new) = w[j][k](old) + ∆w[j][k]
         w += Z.T.dot(deltaY)
+
+        #v[i][j](new) = v[i][j](old) + ∆v[i][j]
         v += X.T.dot(deltaZ)
 
     return Y
@@ -74,7 +76,7 @@ saidaEsperada = np.array( [ [0.],
                             [0.]] )
 '''
 
-arquivo = "/home/mint/Documents/EP IA/estudosIA/python/train_5a_00000.txt"
+arquivo = "/home/mint/Documents/GIT/estudosIA/python/train_5a_00000.txt"
 '''
 53 = S
 58 = X
@@ -106,7 +108,7 @@ saidaEsperada = np.array( [ [0.],
                             [0.],
                             [1.]] )
 
-saida = MLP(entrada,alfa,epocas,erroMaximo,saidaEsperada,nroNeuronios)
+saida = MLP(entrada,alfa,epocas,erroMaximo,nroNeuronios,saidaEsperada)
 
 print("")
 print("Saida = ")
