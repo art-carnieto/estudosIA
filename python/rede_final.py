@@ -36,8 +36,13 @@ def MLP(entrada,taxaDeAprendizado,epocas,erroMaximo,nroNeuronios,target):
     for epoca in xrange(epocas):
         
         #calculo dos valores e ativação
-        Z = sigmoid(np.dot(X,v))
-        Y = sigmoid(np.dot(Z,w))
+        Z_in = np.dot(X,v)
+
+        Z = sigmoid(Z_in)
+
+        Y_in = np.dot(Z,w)
+
+        Y = sigmoid(Y_in)
 
         #erro (diferença entre o target)
         taxaDeErroSaida = T - Y
@@ -46,7 +51,7 @@ def MLP(entrada,taxaDeAprendizado,epocas,erroMaximo,nroNeuronios,target):
             print "Error:" + str(np.mean(np.abs(taxaDeErroSaida)))
             
         #taxa de erro para segunda camada de pesos (δw[k])
-        taxaDeErroW = taxaDeErroSaida * derSigmoid(Y)
+        taxaDeErroW = taxaDeErroSaida * derSigmoid(Y_in)
         
         #∆w[j][k] = α*δw[k]*Z[j]
         deltaW = taxaDeAprendizado * taxaDeErroW * np.transpose(Z)
@@ -55,7 +60,7 @@ def MLP(entrada,taxaDeAprendizado,epocas,erroMaximo,nroNeuronios,target):
         taxaDeErroEscondida = taxaDeErroW.dot(np.transpose(w))
 
         # δv[j] = δv_in[j] f′(z_in[j])
-        taxaDeErroV = taxaDeErroEscondida * derSigmoid(Z)
+        taxaDeErroV = taxaDeErroEscondida * derSigmoid(Z_in)
 
         #∆v[i][j] = αδ[j]
         deltaV = taxaDeAprendizado * np.transpose(X) * taxaDeErroV
