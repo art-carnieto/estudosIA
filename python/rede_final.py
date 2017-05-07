@@ -1,4 +1,6 @@
+#coding: utf-8
 import numpy as np
+import os
 
 def sigmoid(x):
   return 1 / (1 + np.exp(-x))
@@ -76,16 +78,15 @@ saidaEsperada = np.array( [ [0.],
                             [0.]] )
 '''
 
-arquivo = "/home/mint/Documents/GIT/estudosIA/python/train_5a_00000.txt"
-'''
-53 = S
-58 = X
-5a = Z
-'''
+dic1 = {'53': (1,0,0), '58': (0,1,0), '5a': (0,0,1)}    # dicionario 1 ==> para gerar a matriz T (target)
+dic2 = {(1,0,0) : 'S', (0,1,0) : 'X', (0,0,1) : 'Z'}    # dicionario 2 ==> para verificar depois de rodar a rede a resposta
+
+pasta = "/home/arthur/github/estudosIA/python/"
+arquivo = "train_5a_00000.txt"
 print("\tProcessando arquivo " + arquivo)
     
-entrada = np.loadtxt(arquivo, dtype='float', delimiter="\n")
-entrada = np.transpose(entrada) #transpoe de uma matriz linha para uma matriz coluna
+entrada = np.loadtxt(os.path.join(pasta, arquivo), dtype='float', delimiter="\n")
+entrada = np.transpose(entrada) # transpoe de uma matriz linha para uma matriz coluna
 
 print(entrada.shape)
 
@@ -103,13 +104,37 @@ Definicoes da saida:
 58 = X ==> saida esperada = (0, 1, 0)
 5a = Z ==> saida esperada = (0, 0, 1)
 '''
-
+'''
 saidaEsperada = np.array( [ [0.],
                             [0.],
                             [1.]] )
+'''
+
+if "53" in arquivo:
+    saidaEsperada = np.asarray(dic1['53'])
+elif "58" in arquivo:
+    saidaEsperada = np.asarray(dic1['58'])
+elif "5a" in arquivo:
+    saidaEsperada = np.asarray(dic1['5a'])
+else:
+    print("ERRO: arquivo de entrada nao eh 'S', nem 'X' nem 'Z'! (nome errado ou alterado)")
 
 saida = MLP(entrada,alfa,epocas,erroMaximo,nroNeuronios,saidaEsperada)
 
 print("")
 print("Saida = ")
 print(saida)
+
+
+''' AINDA EM CONSTRUCAO
+print("")
+print("Saida arredondada = ")
+saidaArredondada = []
+for i in range(saida.size):
+    saidaArredondada[i] = round(saida[i], 0)
+    print(saidaArredondada[i])
+
+
+print("")
+print("Saida em letra = " + str(saida.ravel))
+'''
