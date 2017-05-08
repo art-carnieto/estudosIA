@@ -5,9 +5,9 @@ from random import shuffle
 import time
 import datetime
 from random import shuffle
+import pickle
 
-np.random.seed(1)
-    #semente
+# np.random.seed(1) #semente de aleatoriedade
 
 def sigmoid(x):
   return 1 / (1 + np.exp(-x))
@@ -56,9 +56,6 @@ def MLP(entrada,taxaDeAprendizado,epocas,erroMaximo,nroNeuronios,target, pesosV=
 
         #erro (diferença entre o target)
         taxaDeErroSaida = T - Y
-        
-        #if (epoca % 10000) == 0:
-            #print "Error:" + str(np.mean(np.abs(taxaDeErroSaida)))
             
         #taxa de erro para segunda camada de pesos (δw[k])
         taxaDeErroW = taxaDeErroSaida * derSigmoid(Y_in)
@@ -164,6 +161,8 @@ elif extrator is "LBP":
 for i in configText:
     config.write(i + "\n")
 
+config.close()
+
 try:
     # caminhoEntrada = os.getcwd() # os.getcwd ==> pasta atual do arquivo hog.py
     if extrator is "HOG":
@@ -195,6 +194,8 @@ fold5 = listaS[800:1000] + listaX[800:1000] + listaZ[800:1000]
 
 listaFolds = [fold1, fold2, fold3, fold4, fold5]
 
+pesosV = None
+pesosW = None
 for i in range(5):
     teste = listaFolds[i]
     treinamento = []
@@ -204,16 +205,12 @@ for i in range(5):
 
     shuffle(treinamento) # embaralha a ordem dos arquivos de treinamento
 
-    treinamento = ["train_5a_00000.txt"]
-    somaTotalErro = 0
-    pesosV = None
-    pesosW = None
+    somaTotalErro = 0    
     for arquivo in treinamento:     # loop de treinamento dos folds atuais
             
         entrada = np.loadtxt(os.path.join(caminhoEntrada, arquivo), dtype='float', delimiter="\n")
         entrada = np.append(entrada, [1.])
         entrada = np.transpose(entrada) # transpoe de uma matriz linha para uma matriz coluna
-
         '''
         Definicoes da saida:
         53 = S ==> saida esperada = (1, 0, 0)
@@ -236,30 +233,37 @@ for i in range(5):
         saida, pesosV, pesosW, erroTreinamento = MLP(entrada,alfa,epocas,erroMaximo,nroNeuronios,saidaEsperada, pesosV, pesosW)
 
         somaTotalErro = somaTotalErro + erroTreinamento
-
+        '''
         saidaArredondada = []
-        for i in range(saida.size):
-            saidaArredondada.append(round(saida[0][i], 0))
+        for aux in range(saida.size):
+            saidaArredondada.append(round(saida[0][aux], 0))
         try:
             letraFinal = str(dic2[tuple(saidaArredondada)])
         except KeyError:
             letraFinal = None
-        #if letra == letraFinal:
-            #condicao de acerto
-        #else:
-            #condicao de erro
+        '''
 
     erroFinal = somaTotalErro / len(treinamento)
-    erro.write(str(i) + ";" + str(erroFinal) + ";0.0\n")
+    erro.write(str(i) + ";" + str(erroFinal))
 
-    '''
+    somaTotalErroTeste = 0
     for arquivo in teste:       # loop de teste dos folds
         entrada = np.loadtxt(os.path.join(caminhoEntrada, arquivo), dtype='float', delimiter="\n")
         entrada = np.append(entrada, [1.])
         entrada = np.transpose(entrada) # transpoe de uma matriz linha para uma matriz coluna
 
         saidaTestada = testaMLP(entrada, pesosV, pesosW)
-    '''
+        erroQuadraticoTeste = erroQuadratico(saidaTestada, saidaEsperada)
+        somaTotalErroTeste = somaTotalErroTeste + erroQuadraticoTeste
+    
+    erroFinalTeste = somaTotalErroTeste / len(teste)
+    erro.write(";" + str(erroFinalTeste) + "\n")
+
+data = (pesosV, pesosW)
+pickle.dump(data, model)
+
+model.close()
+erro.close()
 
 ts = time.time()
 st = datetime.datetime.fromtimestamp(ts).strftime('%d/%m/%Y %H:%M:%S')
