@@ -11,8 +11,20 @@ def derSigmoid(x):
 def criaMatrizPesosDefault(linhas,colunas):
 	return np.random.random((linhas,colunas)) - 1
 
-def MLP(entrada,taxaDeAprendizado,epocas,erroMaximo,nroNeuronios,target):
-    
+def consisteBiasQtdeNiveis(biass):
+    if(biass.shape == [1][0] and biass.size == 2):
+
+        return True
+    else: return False
+
+def MLP(entrada,taxaDeAprendizado,epocas,erroMaximo,nroNeuronios,target,bias = np.array([1,1])):
+    '''
+                if consisteBiasQtdeNiveis(bias) == False:
+                    return None
+            '''
+
+    #entrada.append(bias[0])
+
     if len(entrada.shape) == 1:
         entrada.shape = (entrada.shape[0],1)
     if len(target.shape) == 1:
@@ -25,10 +37,14 @@ def MLP(entrada,taxaDeAprendizado,epocas,erroMaximo,nroNeuronios,target):
     np.random.seed(1)
     #semente
     
+    nroNeuronios #+= 1 #bias
+
     #preenchimento
     #checar regra
     v = criaMatrizPesosDefault(X.shape[1],nroNeuronios)
     w = criaMatrizPesosDefault(nroNeuronios,T.shape[1])
+
+    #Z_in = np.zeros(shape=(X.shape[0],v.shape[1]))
 
     print("v.shape = " + str(v.shape))
     print("w.shape = " + str(w.shape))
