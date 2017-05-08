@@ -11,20 +11,8 @@ def derSigmoid(x):
 def criaMatrizPesosDefault(linhas,colunas):
 	return np.random.random((linhas,colunas)) - 1
 
-def consisteBiasQtdeNiveis(biass):
-    if(biass.shape == [1][0] and biass.size == 2):
-
-        return True
-    else: return False
-
-def MLP(entrada,taxaDeAprendizado,epocas,erroMaximo,nroNeuronios,target,bias = np.array([1,1])):
-    '''
-                if consisteBiasQtdeNiveis(bias) == False:
-                    return None
-            '''
-
-    #entrada.append(bias[0])
-
+def MLP(entrada,taxaDeAprendizado,epocas,erroMaximo,nroNeuronios,target, pesosV=None, pesosW=None):
+    
     if len(entrada.shape) == 1:
         entrada.shape = (entrada.shape[0],1)
     if len(target.shape) == 1:
@@ -37,17 +25,18 @@ def MLP(entrada,taxaDeAprendizado,epocas,erroMaximo,nroNeuronios,target,bias = n
     np.random.seed(1)
     #semente
     
-    nroNeuronios #+= 1 #bias
-
-    #preenchimento
-    #checar regra
-    v = criaMatrizPesosDefault(X.shape[1],nroNeuronios)
-    w = criaMatrizPesosDefault(nroNeuronios,T.shape[1])
-
-    #Z_in = np.zeros(shape=(X.shape[0],v.shape[1]))
-
-    print("v.shape = " + str(v.shape))
-    print("w.shape = " + str(w.shape))
+    nroNeuronios
+    
+    if pesosV is None:
+        print("ENTROU NO IF NONE")
+        v = criaMatrizPesosDefault(X.shape[1],nroNeuronios)
+    else:
+        v = pesosV
+    if pesosW is None:
+        print("ENTROU NO IF NONE")
+        w = criaMatrizPesosDefault(nroNeuronios,T.shape[1])
+    else:
+        w = pesosW
 
     for epoca in xrange(epocas):
         
@@ -87,7 +76,7 @@ def MLP(entrada,taxaDeAprendizado,epocas,erroMaximo,nroNeuronios,target,bias = n
         #v[i][j](new) = v[i][j](old) + ∆v[i][j]
         v += deltaV
 
-    return Y
+    return Y, v, w
 
 # MAIN
 
@@ -107,58 +96,72 @@ saidaEsperada = np.array( [ [0.],
 dic1 = {'53': (1,0,0), '58': (0,1,0), '5a': (0,0,1)}    # dicionario 1 ==> para gerar a matriz T (target)
 dic2 = {(1,0,0) : 'S', (0,1,0) : 'X', (0,0,1) : 'Z'}    # dicionario 2 ==> para verificar depois de rodar a rede a resposta
 
-pasta = "/home/mint/Documents/GIT/estudosIA/python"
-arquivo = "train_5a_00000.txt"
-print("\tProcessando arquivo " + arquivo)
-    
-entrada = np.loadtxt(os.path.join(pasta, arquivo), dtype='float', delimiter="\n")
-entrada = np.transpose(entrada) # transpoe de uma matriz linha para uma matriz coluna
+pasta = "/home/arthur/SI/IA/EP/dataset1/treinamento/HOG 32"
+arquivos = ("train_5a_00000.txt", "train_53_00000.txt", "train_58_00000.txt", "train_58_00020.txt", "train_53_00100.txt")
+arq = open("testePesos.txt", "w")
+pesosV = None
+pesosW = None
+for arquivo in arquivos:
+    print("\tProcessando arquivo " + arquivo)
+        
+    entrada = np.loadtxt(os.path.join(pasta, arquivo), dtype='float', delimiter="\n")
+    entrada = np.append(entrada, [1.])
+    entrada = np.transpose(entrada) # transpoe de uma matriz linha para uma matriz coluna
 
-print(entrada.shape)
+    print(entrada.shape)
 
-alfa = 0.4
+    alfa = 0.4
 
-epocas = 60000
+    epocas = 60000
 
-erroMaximo = 0.15
+    erroMaximo = 0.15
 
-nroNeuronios = 15
+    nroNeuronios = 15
 
-'''
-Definicoes da saida:
-53 = S ==> saida esperada = (1, 0, 0)
-58 = X ==> saida esperada = (0, 1, 0)
-5a = Z ==> saida esperada = (0, 0, 1)
-'''
-'''
-saidaEsperada = np.array( [ [0.],
-                            [0.],
-                            [1.]] )
-'''
+    '''
+    Definicoes da saida:
+    53 = S ==> saida esperada = (1, 0, 0)
+    58 = X ==> saida esperada = (0, 1, 0)
+    5a = Z ==> saida esperada = (0, 0, 1)
+    '''
 
-if "53" in arquivo:
-    saidaEsperada = np.asarray(dic1['53'])
-elif "58" in arquivo:
-    saidaEsperada = np.asarray(dic1['58'])
-elif "5a" in arquivo:
-    saidaEsperada = np.asarray(dic1['5a'])
-else:
-    print("ERRO: arquivo de entrada nao eh 'S', nem 'X' nem 'Z'! (nome errado ou alterado)")
+    if "53" in arquivo:
+        saidaEsperada = np.asarray(dic1['53'])
+    elif "58" in arquivo:
+        saidaEsperada = np.asarray(dic1['58'])
+    elif "5a" in arquivo:
+        saidaEsperada = np.asarray(dic1['5a'])
+    else:
+        print("ERRO: arquivo de entrada nao eh 'S', nem 'X' nem 'Z'! (nome errado ou alterado)")
 
-saida = MLP(entrada,alfa,epocas,erroMaximo,nroNeuronios,saidaEsperada)
+    saida, pesosV, pesosW = MLP(entrada,alfa,epocas,erroMaximo,nroNeuronios,saidaEsperada, pesosV, pesosW)
 
-print("")
-print("Saida = ")
-print(saida)
-
-
-print("")
-print("Saida arredondada = ")
-saidaArredondada = []
-for i in range(saida.size):
-    saidaArredondada.append(round(saida[0][i], 0))
-    print(saidaArredondada[i])
+    print("")
+    print("Saida = ")
+    print(saida)
 
 
-print("")
-print("Saida em letra = " + str(dic2[tuple(saidaArredondada)]))
+    print("")
+    print("Saida arredondada = ")
+    saidaArredondada = []
+    for i in range(saida.size):
+        saidaArredondada.append(round(saida[0][i], 0))
+        print(saidaArredondada[i])
+
+
+    print("")
+    print("Saida em letra = " + str(dic2[tuple(saidaArredondada)]))
+
+    arq.write("pesosV\n")
+    for i in range(pesosV.shape[0]):
+        for j in range(pesosV.shape[1]):
+            arq.write(str(pesosV[i][j]) + " ")
+        arq.write("\n")
+
+    arq.write("\npesosW\n")
+    for i in range(pesosW.shape[0]):
+        for j in range(pesosW.shape[1]):
+            arq.write(str(pesosW[i][j]) + " ")
+    arq.write("\n")
+
+    arq.write("\n****************************************\n")
