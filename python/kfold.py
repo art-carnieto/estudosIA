@@ -21,6 +21,9 @@ except OSError as err:
 
 arquivosImagem = list(filter(lambda k: '.txt' in k, arquivosPasta))
 
+if len(arquivosImagem) == 0:
+	print("Pasta selecionada nao contem imagens .txt!")
+
 ordenados = sorted(arquivosImagem)
 
 arq = open("lista_de_arquivos.txt", "w")

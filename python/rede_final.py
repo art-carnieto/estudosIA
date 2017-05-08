@@ -104,6 +104,9 @@ except OSError as err:
 
 arquivosImagem = list(filter(lambda k: '.txt' in k, arquivosPasta))
 
+if len(arquivosImagem) == 0:
+    print("Pasta selecionada nao contem imagens .txt!")
+
 ordenados = sorted(arquivosImagem)
 
 arquivos = ordenados
@@ -137,13 +140,13 @@ for arquivo in arquivos:
     5a = Z ==> saida esperada = (0, 0, 1)
     '''
     letra = None
-    if "53" in arquivo:
+    if "_53_" in arquivo:
         saidaEsperada = np.asarray(dic1['53'])
         letra = "S"
-    elif "58" in arquivo:
+    elif "_58_" in arquivo:
         saidaEsperada = np.asarray(dic1['58'])
         letra = "X"
-    elif "5a" in arquivo:
+    elif "_5a_" in arquivo:
         saidaEsperada = np.asarray(dic1['5a'])
         letra = "Z"
     else:
@@ -159,15 +162,15 @@ for arquivo in arquivos:
     for i in range(saida.size):
         saidaArredondada.append(round(saida[0][i], 0))
     log.write(str(saidaArredondada))
-
+    log.write("\n\nLetra da entrada = " + letra)
     try:
         log.write("\nSaida em letra = " + str(dic2[tuple(saidaArredondada)]))
         if letra == dic2[tuple(saidaArredondada)]:
             log.write("\nAcertou!\n\n")
         else:
-            log.write("\n@@@@@@@@@@ERROU@@@@@@@@@@\n\n")
+            log.write("\n@@@@@@@@@@ERRO@@@@@@@@@@\n\n")
     except KeyError as err:
-        log.write("\nErro: saida nao corresponde a nenhum caractere!\n")
+        log.write("\nERRO: saida nao corresponde a nenhum caractere!\n")
         log.write("\nSaida = " + str(saidaArredondada) + "\n")
 
 ts = time.time()
