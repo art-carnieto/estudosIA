@@ -1,6 +1,9 @@
 #coding: utf-8
 import numpy as np
 import os
+from random import shuffle
+import time
+import datetime
 
 def sigmoid(x):
   return 1 / (1 + np.exp(-x))
@@ -25,15 +28,11 @@ def MLP(entrada,taxaDeAprendizado,epocas,erroMaximo,nroNeuronios,target, pesosV=
     np.random.seed(1)
     #semente
     
-    nroNeuronios
-    
     if pesosV is None:
-        print("ENTROU NO IF NONE")
         v = criaMatrizPesosDefault(X.shape[1],nroNeuronios)
     else:
         v = pesosV
     if pesosW is None:
-        print("ENTROU NO IF NONE")
         w = criaMatrizPesosDefault(nroNeuronios,T.shape[1])
     else:
         w = pesosW
@@ -52,8 +51,8 @@ def MLP(entrada,taxaDeAprendizado,epocas,erroMaximo,nroNeuronios,target, pesosV=
         #erro (diferença entre o target)
         taxaDeErroSaida = T - Y
         
-        if (epoca % 10000) == 0:
-            print "Error:" + str(np.mean(np.abs(taxaDeErroSaida)))
+        #if (epoca % 10000) == 0:
+            #print "Error:" + str(np.mean(np.abs(taxaDeErroSaida)))
             
         #taxa de erro para segunda camada de pesos (δw[k])
         taxaDeErroW = taxaDeErroSaida * derSigmoid(Y_in)
@@ -96,23 +95,36 @@ saidaEsperada = np.array( [ [0.],
 dic1 = {'53': (1,0,0), '58': (0,1,0), '5a': (0,0,1)}    # dicionario 1 ==> para gerar a matriz T (target)
 dic2 = {(1,0,0) : 'S', (0,1,0) : 'X', (0,0,1) : 'Z'}    # dicionario 2 ==> para verificar depois de rodar a rede a resposta
 
-pasta = "/home/arthur/SI/IA/EP/dataset1/treinamento/HOG 32"
-arquivos = ("train_5a_00000.txt", "train_53_00000.txt", "train_58_00000.txt", "train_58_00020.txt", "train_53_00100.txt")
-arq = open("testePesos.txt", "w")
+try:
+    # caminhoEntrada = os.getcwd() # os.getcwd ==> pasta atual do arquivo hog.py
+    caminhoEntrada = "/home/arthur/SI/IA/EP/dataset1/treinamento/HOG 32" # pasta selecionada pelo usuario
+    arquivosPasta = os.listdir(caminhoEntrada)
+except OSError as err:
+    print("Erro no acesso a pasta com as imagens de entrada: ",err)
+
+arquivosImagem = list(filter(lambda k: '.txt' in k, arquivosPasta))
+
+ordenados = sorted(arquivosImagem)
+
+arquivos = ordenados
+log = open("log.txt", "w")
+
+ts = time.time()
+st = datetime.datetime.fromtimestamp(ts).strftime('%d/%m/%Y %H:%M:%S')
+log.write("Inicio da execucao da rede em " + str(st) + "\n\n")
+
 pesosV = None
 pesosW = None
 for arquivo in arquivos:
-    print("\tProcessando arquivo " + arquivo)
+    log.write("\n\tProcessando arquivo " + arquivo + "\n")
         
-    entrada = np.loadtxt(os.path.join(pasta, arquivo), dtype='float', delimiter="\n")
+    entrada = np.loadtxt(os.path.join(caminhoEntrada, arquivo), dtype='float', delimiter="\n")
     entrada = np.append(entrada, [1.])
     entrada = np.transpose(entrada) # transpoe de uma matriz linha para uma matriz coluna
 
-    print(entrada.shape)
-
     alfa = 0.4
 
-    epocas = 60000
+    epocas = 1000
 
     erroMaximo = 0.15
 
@@ -124,44 +136,40 @@ for arquivo in arquivos:
     58 = X ==> saida esperada = (0, 1, 0)
     5a = Z ==> saida esperada = (0, 0, 1)
     '''
-
+    letra = None
     if "53" in arquivo:
         saidaEsperada = np.asarray(dic1['53'])
+        letra = "S"
     elif "58" in arquivo:
         saidaEsperada = np.asarray(dic1['58'])
+        letra = "X"
     elif "5a" in arquivo:
         saidaEsperada = np.asarray(dic1['5a'])
+        letra = "Z"
     else:
-        print("ERRO: arquivo de entrada nao eh 'S', nem 'X' nem 'Z'! (nome errado ou alterado)")
+        log.write("\nERRO: arquivo de entrada nao eh 'S', nem 'X' nem 'Z'! (nome errado ou alterado)\n")
 
     saida, pesosV, pesosW = MLP(entrada,alfa,epocas,erroMaximo,nroNeuronios,saidaEsperada, pesosV, pesosW)
 
-    print("")
-    print("Saida = ")
-    print(saida)
+    log.write("\nSaida = \n")
+    log.write(str(saida))
 
-
-    print("")
-    print("Saida arredondada = ")
+    log.write("\n\nSaida arredondada = \n")
     saidaArredondada = []
     for i in range(saida.size):
         saidaArredondada.append(round(saida[0][i], 0))
-        print(saidaArredondada[i])
+    log.write(str(saidaArredondada))
 
+    try:
+        log.write("\nSaida em letra = " + str(dic2[tuple(saidaArredondada)]))
+        if letra == dic2[tuple(saidaArredondada)]:
+            log.write("\nAcertou!\n\n")
+        else:
+            log.write("\n@@@@@@@@@@ERROU@@@@@@@@@@\n\n")
+    except KeyError as err:
+        log.write("\nErro: saida nao corresponde a nenhum caractere!\n")
+        log.write("\nSaida = " + str(saidaArredondada) + "\n")
 
-    print("")
-    print("Saida em letra = " + str(dic2[tuple(saidaArredondada)]))
-
-    arq.write("pesosV\n")
-    for i in range(pesosV.shape[0]):
-        for j in range(pesosV.shape[1]):
-            arq.write(str(pesosV[i][j]) + " ")
-        arq.write("\n")
-
-    arq.write("\npesosW\n")
-    for i in range(pesosW.shape[0]):
-        for j in range(pesosW.shape[1]):
-            arq.write(str(pesosW[i][j]) + " ")
-    arq.write("\n")
-
-    arq.write("\n****************************************\n")
+ts = time.time()
+st = datetime.datetime.fromtimestamp(ts).strftime('%d/%m/%Y %H:%M:%S')
+log.write("Fim da execucao da rede em " + str(st) + "\n\n")
