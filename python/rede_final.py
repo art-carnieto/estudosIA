@@ -4,6 +4,7 @@ import os
 from random import shuffle
 import time
 import datetime
+from random import shuffle
 
 def sigmoid(x):
   return 1 / (1 + np.exp(-x))
@@ -77,6 +78,22 @@ def MLP(entrada,taxaDeAprendizado,epocas,erroMaximo,nroNeuronios,target, pesosV=
 
     return Y, v, w
 
+def testaMLP(entrada, pesosV, pesosW):
+    if len(entrada.shape) == 1:
+        entrada.shape = (entrada.shape[0],1)
+
+    X = np.copy(np.transpose(entrada.copy()))
+
+    Z_in = np.dot(X,pesosV)
+
+    Z = sigmoid(Z_in)
+
+    Y_in = np.dot(Z,pesosW)
+
+    Y = sigmoid(Y_in)
+
+    return Y
+
 # MAIN
 
 config = open("config.txt", "w")
@@ -99,6 +116,9 @@ st = datetime.datetime.fromtimestamp(ts).strftime('%d/%m/%Y %H:%M:%S')
 print("Iniciando a execucao em " + st)
 config.write("Execucao em " + st + "\n")
 erro.write("Execucao em " + st + "\n")
+
+dic1 = {'53': (1,0,0), '58': (0,1,0), '5a': (0,0,1)}    # dicionario 1 ==> para gerar a matriz T (target)
+dic2 = {(1,0,0) : 'S', (0,1,0) : 'X', (0,0,1) : 'Z'}    # dicionario 2 ==> para verificar depois de rodar a rede a resposta
 
 if extrator is "HOG":
     configText = [
@@ -137,9 +157,6 @@ elif extrator is "LBP":
 for i in configText:
     config.write(i + "\n")
 
-dic1 = {'53': (1,0,0), '58': (0,1,0), '5a': (0,0,1)}    # dicionario 1 ==> para gerar a matriz T (target)
-dic2 = {(1,0,0) : 'S', (0,1,0) : 'X', (0,0,1) : 'Z'}    # dicionario 2 ==> para verificar depois de rodar a rede a resposta
-
 try:
     # caminhoEntrada = os.getcwd() # os.getcwd ==> pasta atual do arquivo hog.py
     if extrator is "HOG":
@@ -159,47 +176,75 @@ ordenados = sorted(arquivosImagem)
 
 arquivos = ordenados
 
-pesosV = None
-pesosW = None
-for arquivo in arquivos:
-        
-    entrada = np.loadtxt(os.path.join(caminhoEntrada, arquivo), dtype='float', delimiter="\n")
-    entrada = np.append(entrada, [1.])
-    entrada = np.transpose(entrada) # transpoe de uma matriz linha para uma matriz coluna
+listaS = ordenados[0:1000]
+listaX = ordenados[1000:2000]
+listaZ = ordenados[2000:3000]
 
-    '''
-    Definicoes da saida:
-    53 = S ==> saida esperada = (1, 0, 0)
-    58 = X ==> saida esperada = (0, 1, 0)
-    5a = Z ==> saida esperada = (0, 0, 1)
-    '''
-    letra = None
-    if "_53_" in arquivo:
-        saidaEsperada = np.asarray(dic1['53'])
-        letra = "S"
-    elif "_58_" in arquivo:
-        saidaEsperada = np.asarray(dic1['58'])
-        letra = "X"
-    elif "_5a_" in arquivo:
-        saidaEsperada = np.asarray(dic1['5a'])
-        letra = "Z"
-    else:
-        print("\nERRO: arquivo de entrada nao eh 'S', nem 'X' nem 'Z'! (nome errado ou alterado)\n")
+fold1 = listaS[0:200] + listaX[0:200] + listaZ[0:200]
+fold2 = listaS[200:400] + listaX[200:400] + listaZ[200:400]
+fold3 = listaS[400:600] + listaX[400:600] + listaZ[400:600]
+fold4 = listaS[600:800] + listaX[600:800] + listaZ[600:800]
+fold5 = listaS[800:1000] + listaX[800:1000] + listaZ[800:1000]
 
-    saida, pesosV, pesosW = MLP(entrada,alfa,epocas,erroMaximo,nroNeuronios,saidaEsperada, pesosV, pesosW)
+listaFolds = [fold1, fold2, fold3, fold4, fold5]
 
-    saidaArredondada = []
-    for i in range(saida.size):
-        saidaArredondada.append(round(saida[0][i], 0))
-    try:
-        letraFinal = str(dic2[tuple(saidaArredondada)])
-    except KeyError:
-        letraFinal = None
-    #if letra == letraFinal:
-        #condicao de acerto
-    #else:
-        #condicao de erro
-    
+for i in range(5):
+    teste = listaFolds[i]
+    treinamento = []
+    for j in range(5):
+        if(j != i):
+            treinamento = treinamento + listaFolds[j]
+
+    shuffle(treinamento) # embaralha a ordem dos arquivos de treinamento
+
+    pesosV = None
+    pesosW = None
+    for arquivo in treinamento:     # loop de treinamento dos folds atuais
+            
+        entrada = np.loadtxt(os.path.join(caminhoEntrada, arquivo), dtype='float', delimiter="\n")
+        entrada = np.append(entrada, [1.])
+        entrada = np.transpose(entrada) # transpoe de uma matriz linha para uma matriz coluna
+
+        '''
+        Definicoes da saida:
+        53 = S ==> saida esperada = (1, 0, 0)
+        58 = X ==> saida esperada = (0, 1, 0)
+        5a = Z ==> saida esperada = (0, 0, 1)
+        '''
+        letra = None
+        if "_53_" in arquivo:
+            saidaEsperada = np.asarray(dic1['53'])
+            letra = "S"
+        elif "_58_" in arquivo:
+            saidaEsperada = np.asarray(dic1['58'])
+            letra = "X"
+        elif "_5a_" in arquivo:
+            saidaEsperada = np.asarray(dic1['5a'])
+            letra = "Z"
+        else:
+            print("\nERRO: arquivo de entrada nao eh 'S', nem 'X' nem 'Z'! (nome errado ou alterado)\n")
+
+        saida, pesosV, pesosW = MLP(entrada,alfa,epocas,erroMaximo,nroNeuronios,saidaEsperada, pesosV, pesosW)
+
+        saidaArredondada = []
+        for i in range(saida.size):
+            saidaArredondada.append(round(saida[0][i], 0))
+        try:
+            letraFinal = str(dic2[tuple(saidaArredondada)])
+        except KeyError:
+            letraFinal = None
+        #if letra == letraFinal:
+            #condicao de acerto
+        #else:
+            #condicao de erro
+
+    for arquivo in teste:       # loop de teste dos folds
+        entrada = np.loadtxt(os.path.join(caminhoEntrada, arquivo), dtype='float', delimiter="\n")
+        entrada = np.append(entrada, [1.])
+        entrada = np.transpose(entrada) # transpoe de uma matriz linha para uma matriz coluna
+
+        saidaTestada = testaMLP(entrada, pesosV, pesosW)
+
 ts = time.time()
 st = datetime.datetime.fromtimestamp(ts).strftime('%d/%m/%Y %H:%M:%S')
 print("Fim da execucao da rede em " + str(st) + "\n\n")
