@@ -79,25 +79,73 @@ def MLP(entrada,taxaDeAprendizado,epocas,erroMaximo,nroNeuronios,target, pesosV=
 
 # MAIN
 
-'''
-#problema do XOR:
-entrada = np.array( [  [0., 0., 1.],
-                       [0., 1., 1.], 
-                       [1., 0., 1.], 
-                       [1., 1., 1.] ])
+config = open("config.txt", "w")
+erro = open("erro.txt", "w")
+model = open("model.dat", "wb")
 
-saidaEsperada = np.array( [ [0.],
-                            [1.],
-                            [1.],
-                            [0.]] )
-'''
+global alfa
+alfa = 0.4
+global epocas
+epocas = 1000
+global erroMaximo
+erroMaximo = 0.15
+global nroNeuronios
+nroNeuronios = 15
+global extrator
+extrator = "HOG"
+
+ts = time.time()
+st = datetime.datetime.fromtimestamp(ts).strftime('%d/%m/%Y %H:%M:%S')
+print("Iniciando a execucao em " + st)
+config.write("Execucao em " + st + "\n")
+erro.write("Execucao em " + st + "\n")
+
+if extrator is "HOG":
+    configText = [
+        "extrator : HOG",
+        "extrator_orientacoes: 10",
+        "extrator_pixel_por_celula : 32",
+        "extrator_celula_por_bloco : 1\n",
+        "rede_alpha : " + str(alfa),
+        "rede_camada_Z_neuronios : " + str(nroNeuronios),
+        "rede_camada_Z_funcao_de_ativacao : sigmoide",
+        "rede_camada_Y_neuronios : 3",
+        "rede_camada_Y_funcao_de_ativacao : sigmoide",
+        "rede_inicializacao_pesos : aleatoria",
+        "rede_min_epocas : 0",
+        "rede_max_epocas : " + str(epocas),
+        "rede_parada_antecipada : loop que vai de 0 a max epocas"
+    ]
+
+elif extrator is "LBP":
+    configText = [
+        "extrator : LBP",
+        "extrator_numero_pontos: 24",
+        "extrator_raio : 8",
+        "extrator_metodo : uniform\n",
+        "rede_alpha : " + str(alfa),
+        "rede_camada_Z_neuronios : " + str(nroNeuronios),
+        "rede_camada_Z_funcao_de_ativacao : sigmoide",
+        "rede_camada_Y_neuronios : 3",
+        "rede_camada_Y_funcao_de_ativacao : sigmoide",
+        "rede_inicializacao_pesos : aleatoria",
+        "rede_min_epocas : 0",
+        "rede_max_epocas : " + str(epocas),
+        "rede_parada_antecipada : loop que vai de 0 a max epocas"
+    ]
+
+for i in configText:
+    config.write(i + "\n")
 
 dic1 = {'53': (1,0,0), '58': (0,1,0), '5a': (0,0,1)}    # dicionario 1 ==> para gerar a matriz T (target)
 dic2 = {(1,0,0) : 'S', (0,1,0) : 'X', (0,0,1) : 'Z'}    # dicionario 2 ==> para verificar depois de rodar a rede a resposta
 
 try:
     # caminhoEntrada = os.getcwd() # os.getcwd ==> pasta atual do arquivo hog.py
-    caminhoEntrada = "/home/arthur/SI/IA/EP/dataset1/treinamento/HOG 32" # pasta selecionada pelo usuario
+    if extrator is "HOG":
+        caminhoEntrada = "/home/arthur/SI/IA/EP/dataset1/treinamento/HOG 32" # pasta selecionada pelo usuario
+    elif extrator is "LBP":
+        caminhoEntrada = "/home/arthur/SI/IA/EP/dataset1/treinamento/LBP" # pasta selecionada pelo usuario
     arquivosPasta = os.listdir(caminhoEntrada)
 except OSError as err:
     print("Erro no acesso a pasta com as imagens de entrada: ",err)
@@ -110,28 +158,14 @@ if len(arquivosImagem) == 0:
 ordenados = sorted(arquivosImagem)
 
 arquivos = ordenados
-log = open("log.txt", "w")
-
-ts = time.time()
-st = datetime.datetime.fromtimestamp(ts).strftime('%d/%m/%Y %H:%M:%S')
-log.write("Inicio da execucao da rede em " + str(st) + "\n\n")
 
 pesosV = None
 pesosW = None
 for arquivo in arquivos:
-    log.write("\n\tProcessando arquivo " + arquivo + "\n")
         
     entrada = np.loadtxt(os.path.join(caminhoEntrada, arquivo), dtype='float', delimiter="\n")
     entrada = np.append(entrada, [1.])
     entrada = np.transpose(entrada) # transpoe de uma matriz linha para uma matriz coluna
-
-    alfa = 0.4
-
-    epocas = 1000
-
-    erroMaximo = 0.15
-
-    nroNeuronios = 15
 
     '''
     Definicoes da saida:
@@ -150,29 +184,22 @@ for arquivo in arquivos:
         saidaEsperada = np.asarray(dic1['5a'])
         letra = "Z"
     else:
-        log.write("\nERRO: arquivo de entrada nao eh 'S', nem 'X' nem 'Z'! (nome errado ou alterado)\n")
+        print("\nERRO: arquivo de entrada nao eh 'S', nem 'X' nem 'Z'! (nome errado ou alterado)\n")
 
     saida, pesosV, pesosW = MLP(entrada,alfa,epocas,erroMaximo,nroNeuronios,saidaEsperada, pesosV, pesosW)
 
-    log.write("\nSaida = \n")
-    log.write(str(saida))
-
-    log.write("\n\nSaida arredondada = \n")
     saidaArredondada = []
     for i in range(saida.size):
         saidaArredondada.append(round(saida[0][i], 0))
-    log.write(str(saidaArredondada))
-    log.write("\n\nLetra da entrada = " + letra)
     try:
-        log.write("\nSaida em letra = " + str(dic2[tuple(saidaArredondada)]))
-        if letra == dic2[tuple(saidaArredondada)]:
-            log.write("\nAcertou!\n\n")
-        else:
-            log.write("\n@@@@@@@@@@ERRO@@@@@@@@@@\n\n")
-    except KeyError as err:
-        log.write("\nERRO: saida nao corresponde a nenhum caractere!\n")
-        log.write("\nSaida = " + str(saidaArredondada) + "\n")
-
+        letraFinal = str(dic2[tuple(saidaArredondada)])
+    except KeyError:
+        letraFinal = None
+    #if letra == letraFinal:
+        #condicao de acerto
+    #else:
+        #condicao de erro
+    
 ts = time.time()
 st = datetime.datetime.fromtimestamp(ts).strftime('%d/%m/%Y %H:%M:%S')
-log.write("Fim da execucao da rede em " + str(st) + "\n\n")
+print("Fim da execucao da rede em " + str(st) + "\n\n")
