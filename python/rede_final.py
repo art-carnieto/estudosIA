@@ -6,11 +6,17 @@ import time
 import datetime
 from random import shuffle
 
+np.random.seed(1)
+    #semente
+
 def sigmoid(x):
   return 1 / (1 + np.exp(-x))
 
 def derSigmoid(x):
     return np.exp(x) / np.power((np.exp(x)+1),2)
+
+def erroQuadratico(x, T):
+    return np.sum(np.power(T - x,2))/2
 
 def criaMatrizPesosDefault(linhas,colunas):
 	return np.random.random((linhas,colunas)) - 1
@@ -26,9 +32,6 @@ def MLP(entrada,taxaDeAprendizado,epocas,erroMaximo,nroNeuronios,target, pesosV=
 
     T = np.copy(np.transpose(target.copy()))
 
-    np.random.seed(1)
-    #semente
-    
     if pesosV is None:
         v = criaMatrizPesosDefault(X.shape[1],nroNeuronios)
     else:
@@ -37,6 +40,8 @@ def MLP(entrada,taxaDeAprendizado,epocas,erroMaximo,nroNeuronios,target, pesosV=
         w = criaMatrizPesosDefault(nroNeuronios,T.shape[1])
     else:
         w = pesosW
+
+    taxaDeErroSaida = 0
 
     for epoca in xrange(epocas):
         
@@ -76,7 +81,9 @@ def MLP(entrada,taxaDeAprendizado,epocas,erroMaximo,nroNeuronios,target, pesosV=
         #v[i][j](new) = v[i][j](old) + ∆v[i][j]
         v += deltaV
 
-    return Y, v, w
+    erroTreinamento = erroQuadratico(Y, T)
+
+    return Y, v, w, erroTreinamento
 
 def testaMLP(entrada, pesosV, pesosW):
     if len(entrada.shape) == 1:
@@ -197,6 +204,8 @@ for i in range(5):
 
     shuffle(treinamento) # embaralha a ordem dos arquivos de treinamento
 
+    treinamento = ["train_5a_00000.txt"]
+    somaTotalErro = 0
     pesosV = None
     pesosW = None
     for arquivo in treinamento:     # loop de treinamento dos folds atuais
@@ -224,7 +233,9 @@ for i in range(5):
         else:
             print("\nERRO: arquivo de entrada nao eh 'S', nem 'X' nem 'Z'! (nome errado ou alterado)\n")
 
-        saida, pesosV, pesosW = MLP(entrada,alfa,epocas,erroMaximo,nroNeuronios,saidaEsperada, pesosV, pesosW)
+        saida, pesosV, pesosW, erroTreinamento = MLP(entrada,alfa,epocas,erroMaximo,nroNeuronios,saidaEsperada, pesosV, pesosW)
+
+        somaTotalErro = somaTotalErro + erroTreinamento
 
         saidaArredondada = []
         for i in range(saida.size):
@@ -238,12 +249,17 @@ for i in range(5):
         #else:
             #condicao de erro
 
+    erroFinal = somaTotalErro / len(treinamento)
+    erro.write(str(i) + ";" + str(erroFinal) + ";0.0\n")
+
+    '''
     for arquivo in teste:       # loop de teste dos folds
         entrada = np.loadtxt(os.path.join(caminhoEntrada, arquivo), dtype='float', delimiter="\n")
         entrada = np.append(entrada, [1.])
         entrada = np.transpose(entrada) # transpoe de uma matriz linha para uma matriz coluna
 
         saidaTestada = testaMLP(entrada, pesosV, pesosW)
+    '''
 
 ts = time.time()
 st = datetime.datetime.fromtimestamp(ts).strftime('%d/%m/%Y %H:%M:%S')
