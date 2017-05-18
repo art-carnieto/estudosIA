@@ -8,6 +8,8 @@ from skimage.io import imread, imshow
 from skimage.feature import hog
 from skimage import color
 import os
+import pickle
+import sys
 
 np.set_printoptions(threshold=np.nan) # corrige o tamanho maximo do print na saida padrao de um ndarray
 
@@ -17,18 +19,39 @@ try:
 	arquivosPasta = os.listdir(caminhoEntrada)
 except OSError as err:
 	print("Erro no acesso a pasta com as imagens de entrada: ",err)
+	sys.exit(-1)
 
 arquivosImagem = list(filter(lambda k: '.png' in k, arquivosPasta))
 
-# ppc = [128, 64, 32, 16, 8, 4, 2] # ppc = pixels por celula, para varios casos
-ppc = [32] # ppc = pixels por celula, somente para 32x32
-
 if len(arquivosImagem) == 0:
 	print("Pasta selecionada nao contem imagens .png")
+	sys.exit(-1)
+
+# ppc = [128, 64, 32, 16, 8, 4, 2] # ppc = pixels por celula, para varios casos
+ppc = [32] # ppc = pixels por celula, somente para 32x32
+ori = 10 # orientations
+cpb = 1 # cells_per_block
 
 for i in ppc:
 	print("")
 	print("Iniciando HOG com pixels_per_cell = " + str(i) + "x" + str(i))
+	
+	try:
+		caminhoSaida = os.path.join(caminhoEntrada,"HOG" + str(i))
+		if not os.path.exists(caminhoSaida):
+			os.makedirs(caminhoSaida)
+	except OSError as err:
+		print("Erro de acesso a pasta de saida: ", err)
+
+	try:
+		arqConfig = open(os.path.join(caminhoSaida,"configExtrator.dat"), "wb")
+	except IOError as err:
+		print("Erro na escrita do arquivo configExtrator.dat", err)
+
+	data = (i, ori, cpb)
+	pickle.dump(data, arqConfig)
+	arqConfig.close()
+
 	for imagem in arquivosImagem:
 		print("\tProcessando imagem " + imagem)
 		try:
@@ -36,8 +59,8 @@ for i in ppc:
 		except IOError as err:
 			print("Erro na leitura da imagem ", imagem, ": ", err)
 
-		v, B = hog(A,orientations=10, pixels_per_cell=(i, i),
-			cells_per_block=(1, 1), visualise=True)
+		v, B = hog(A,orientations=ori, pixels_per_cell=(i, i),
+			cells_per_block=(cpb, cpb), visualise=True)
 
 		'''
 		# plots para mostrar as imagens geradas:
@@ -59,13 +82,6 @@ for i in ppc:
 		# trocando a extensao .png por .txt:
 		saida = imagem[:-3]
 		saida = saida + "txt"
-
-		try:
-			caminhoSaida = os.path.join(caminhoEntrada,"HOG " + str(i))
-			if not os.path.exists(caminhoSaida):
-				os.makedirs(caminhoSaida)
-		except OSError as err:
-			print("Erro de acesso a pasta de saida: ", err)
 
 		try:
 			f = open(os.path.join(caminhoSaida, saida), 'w')
