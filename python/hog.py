@@ -13,53 +13,62 @@ import sys
 
 np.set_printoptions(threshold=np.nan) # corrige o tamanho maximo do print na saida padrao de um ndarray
 
-try:
-	# caminhoEntrada = os.getcwd() # os.getcwd ==> pasta atual do arquivo hog.py
-	caminhoEntrada = "/home/arthur/SI/IA/EP/dataset1/treinamento" # pasta selecionada pelo usuario
-	arquivosPasta = os.listdir(caminhoEntrada)
-except OSError as err:
-	print("Erro no acesso a pasta com as imagens de entrada: ",err)
-	sys.exit(-1)
+def main(argv):
 
-arquivosImagem = list(filter(lambda k: '.png' in k, arquivosPasta))
+	if(len(argv) < 4):
+		print("Numero errado de argumentos!")
+		print("Usagem do hog.py:")
+		print("argumento-01: Inteiro que define o numero de pixels por celula")
+		print("argumento-02: Inteiro que define o numero de orientacoes")
+		print("argumento-03: Inteiro que define o numero de celulas por bloco")
+		return
 
-if len(arquivosImagem) == 0:
-	print("Pasta selecionada nao contem imagens .png")
-	sys.exit(-1)
+	ppc = int(argv[1]) # pixels por celula, definida pelo usuario
+	ori = int(argv[2]) # orientations, definida pelo usuario
+	cpb = int(argv[3]) # cells_per_block, definida pelo usuario
 
-# ppc = [128, 64, 32, 16, 8, 4, 2] # ppc = pixels por celula, para varios casos
-ppc = [32] # ppc = pixels por celula, somente para 32x32
-ori = 10 # orientations
-cpb = 1 # cells_per_block
+	verbose = False	# opcao de entrada do programa "-verbose" coloca prints para debugging
+	if(len(argv) == 5):
+		if(argv[4] == "-verbose"):
+			verbose = True
 
-for i in ppc:
-	print("")
-	print("Iniciando HOG com pixels_per_cell = " + str(i) + "x" + str(i))
-	
 	try:
-		caminhoSaida = os.path.join(caminhoEntrada,"HOG" + str(i))
-		if not os.path.exists(caminhoSaida):
-			os.makedirs(caminhoSaida)
+		# caminhoEntrada = os.getcwd() # os.getcwd ==> pasta atual do arquivo hog.py
+		caminhoEntrada = "/home/arthur/SI/IA/EP/dataset1/treinamento" # pasta selecionada pelo usuario
+		arquivosPasta = os.listdir(caminhoEntrada)
+	except OSError as err:
+		print("Erro no acesso a pasta com as imagens de entrada: ",err)
+		return
+
+	arquivosImagem = list(filter(lambda k: '.png' in k, arquivosPasta))
+
+	if len(arquivosImagem) == 0:
+		print("Pasta selecionada nao contem imagens .png")
+		return
+	
+	i = 1
+	existePasta = True
+	try:
+		while(existePasta == True):
+			caminhoSaida = os.path.join(caminhoEntrada,"HOG" + str(i))
+			if os.path.exists(caminhoSaida):
+				i += 1
+			else:
+				existePasta = False
+		os.makedirs(caminhoSaida)
 	except OSError as err:
 		print("Erro de acesso a pasta de saida: ", err)
-
-	try:
-		arqConfig = open(os.path.join(caminhoSaida,"configExtrator.dat"), "wb")
-	except IOError as err:
-		print("Erro na escrita do arquivo configExtrator.dat", err)
-
-	data = (i, ori, cpb)
-	pickle.dump(data, arqConfig)
-	arqConfig.close()
+		return
 
 	for imagem in arquivosImagem:
-		print("\tProcessando imagem " + imagem)
+		if (verbose == True):
+			print("\tProcessando imagem " + imagem)
 		try:
 			A = color.rgb2gray(imread(os.path.join(caminhoEntrada, imagem)))
 		except IOError as err:
 			print("Erro na leitura da imagem ", imagem, ": ", err)
 
-		v, B = hog(A,orientations=ori, pixels_per_cell=(i, i),
+		v, B = hog(A,orientations=ori, pixels_per_cell=(ppc, ppc),
 			cells_per_block=(cpb, cpb), visualise=True)
 
 		'''
@@ -90,3 +99,31 @@ for i in ppc:
 				f.write(str(x) + "\n")
 		except IOError as err:
 			print("Erro na escrita do arquivo ", saida, ": ", err)
+
+	try:
+		arqConfig = open(os.path.join(caminhoSaida,"configExtrator.dat"), "wb")
+	except IOError as err:
+		print("Erro na escrita do arquivo configExtrator.dat", err)
+		return
+
+	data = (ppc, ori, cpb)
+	pickle.dump(data, arqConfig)
+	arqConfig.close()
+
+	try:
+		arqLog = open(os.path.join(os.getcwd(),"logExtratores.txt"), "a")
+	except IOError as err:
+		print("Erro na escrita do arquivo logExtratores.txt", err)
+		return
+
+	texto = ["HOG" + str(i) + ": " + caminhoSaida + "\n",
+			 "ppc = " + str(ppc) + "\n",
+			 "ori = " + str(ori) + "\n",
+			 "cpb = " + str(cpb) + "\n\n"
+	]
+	for linha in texto:
+		arqLog.write(linha)
+	arqLog.close()
+
+if __name__ == "__main__":
+    main(sys.argv)
