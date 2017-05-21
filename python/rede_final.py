@@ -6,6 +6,7 @@ import time
 import datetime
 from random import shuffle
 import pickle
+import sys
 
 # np.random.seed(1) #semente de aleatoriedade
 
@@ -98,173 +99,212 @@ def testaMLP(entrada, pesosV, pesosW):
 
     return Y
 
-# MAIN
+def main(argv):
 
-config = open("config.txt", "w")
-erro = open("erro.txt", "w")
-model = open("model.dat", "wb")
+    if(len(argv) != 6):
+        print("Numero errado de argumentos!")
+        print("Usagem do rede_final.py:")
+        print("argumento-01: Pasta com a entrada da rede, deve comecar por 'HOG' ou 'LBP' (sem aspas)")
+        print("argumento-02: Alfa (taxa de aprendizado) a ser usado na rede")
+        print("argumento-03: Numero de epocas que sera usado no MLP")
+        print("argumento-04: Erro maximo da rede MLP")
+        print("argumento-05: Numero de neuronios da camada escondida da rede MLP")
+        return
 
-global alfa
-alfa = 0.4
-global epocas
-epocas = 1000
-global erroMaximo
-erroMaximo = 0.15
-global nroNeuronios
-nroNeuronios = 15
-global extrator
-extrator = "HOG"
+    if not(argv[1].startswith("HOG", 0, 3) or argv[1].startswith("LBP", 0, 3)):
+        print("Extrator desconhecido!")
+        print("O argumento-01 deve ser o nome da pasta com a entrada e deve comecar por 'HOG' ou 'LBP' (sem aspas), por exemplo: 'HOG', 'HOG1', 'HOG2', ...")
+        return
 
-ts = time.time()
-st = datetime.datetime.fromtimestamp(ts).strftime('%d/%m/%Y %H:%M:%S')
-print("Iniciando a execucao em " + st)
-config.write("Execucao em " + st + "\n")
-erro.write("Execucao em " + st + "\n")
-
-dic1 = {'53': (1,0,0), '58': (0,1,0), '5a': (0,0,1)}    # dicionario 1 ==> para gerar a matriz T (target)
-dic2 = {(1,0,0) : 'S', (0,1,0) : 'X', (0,0,1) : 'Z'}    # dicionario 2 ==> para verificar depois de rodar a rede a resposta
-
-if extrator is "HOG":
-    configText = [
-        "extrator : HOG",
-        "extrator_orientacoes: 10",
-        "extrator_pixel_por_celula : 32",
-        "extrator_celula_por_bloco : 1\n",
-        "rede_alpha : " + str(alfa),
-        "rede_camada_Z_neuronios : " + str(nroNeuronios),
-        "rede_camada_Z_funcao_de_ativacao : sigmoide",
-        "rede_camada_Y_neuronios : 3",
-        "rede_camada_Y_funcao_de_ativacao : sigmoide",
-        "rede_inicializacao_pesos : aleatoria",
-        "rede_min_epocas : 0",
-        "rede_max_epocas : " + str(epocas),
-        "rede_parada_antecipada : loop que vai de 0 a max epocas"
-    ]
-
-elif extrator is "LBP":
-    configText = [
-        "extrator : LBP",
-        "extrator_numero_pontos: 24",
-        "extrator_raio : 8",
-        "extrator_metodo : uniform\n",
-        "rede_alpha : " + str(alfa),
-        "rede_camada_Z_neuronios : " + str(nroNeuronios),
-        "rede_camada_Z_funcao_de_ativacao : sigmoide",
-        "rede_camada_Y_neuronios : 3",
-        "rede_camada_Y_funcao_de_ativacao : sigmoide",
-        "rede_inicializacao_pesos : aleatoria",
-        "rede_min_epocas : 0",
-        "rede_max_epocas : " + str(epocas),
-        "rede_parada_antecipada : loop que vai de 0 a max epocas"
-    ]
-
-for i in configText:
-    config.write(i + "\n")
-
-config.close()
-
-try:
-    # caminhoEntrada = os.getcwd() # os.getcwd ==> pasta atual do arquivo hog.py
-    if extrator is "HOG":
-        caminhoEntrada = "/home/arthur/SI/IA/EP/dataset1/treinamento/HOG 32" # pasta selecionada pelo usuario
-    elif extrator is "LBP":
-        caminhoEntrada = "/home/arthur/SI/IA/EP/dataset1/treinamento/LBP" # pasta selecionada pelo usuario
-    arquivosPasta = os.listdir(caminhoEntrada)
-except OSError as err:
-    print("Erro no acesso a pasta com as imagens de entrada: ",err)
-
-arquivosImagem = list(filter(lambda k: '.txt' in k, arquivosPasta))
-
-if len(arquivosImagem) == 0:
-    print("Pasta selecionada nao contem imagens .txt!")
-
-ordenados = sorted(arquivosImagem)
-
-arquivos = ordenados
-
-listaS = ordenados[0:1000]
-listaX = ordenados[1000:2000]
-listaZ = ordenados[2000:3000]
-
-fold1 = listaS[0:200] + listaX[0:200] + listaZ[0:200]
-fold2 = listaS[200:400] + listaX[200:400] + listaZ[200:400]
-fold3 = listaS[400:600] + listaX[400:600] + listaZ[400:600]
-fold4 = listaS[600:800] + listaX[600:800] + listaZ[600:800]
-fold5 = listaS[800:1000] + listaX[800:1000] + listaZ[800:1000]
-
-listaFolds = [fold1, fold2, fold3, fold4, fold5]
-
-pesosV = None
-pesosW = None
-for i in range(5):
-    teste = listaFolds[i]
-    treinamento = []
-    for j in range(5):
-        if(j != i):
-            treinamento = treinamento + listaFolds[j]
-
-    shuffle(treinamento) # embaralha a ordem dos arquivos de treinamento
-
-    somaTotalErro = 0    
-    for arquivo in treinamento:     # loop de treinamento dos folds atuais
-            
-        entrada = np.loadtxt(os.path.join(caminhoEntrada, arquivo), dtype='float', delimiter="\n")
-        entrada = np.append(entrada, [1.])
-        entrada = np.transpose(entrada) # transpoe de uma matriz linha para uma matriz coluna
-        '''
-        Definicoes da saida:
-        53 = S ==> saida esperada = (1, 0, 0)
-        58 = X ==> saida esperada = (0, 1, 0)
-        5a = Z ==> saida esperada = (0, 0, 1)
-        '''
-        letra = None
-        if "_53_" in arquivo:
-            saidaEsperada = np.asarray(dic1['53'])
-            letra = "S"
-        elif "_58_" in arquivo:
-            saidaEsperada = np.asarray(dic1['58'])
-            letra = "X"
-        elif "_5a_" in arquivo:
-            saidaEsperada = np.asarray(dic1['5a'])
-            letra = "Z"
-        else:
-            print("\nERRO: arquivo de entrada nao eh 'S', nem 'X' nem 'Z'! (nome errado ou alterado)\n")
-
-        saida, pesosV, pesosW, erroTreinamento = MLP(entrada,alfa,epocas,erroMaximo,nroNeuronios,saidaEsperada, pesosV, pesosW)
-
-        somaTotalErro = somaTotalErro + erroTreinamento
-        '''
-        saidaArredondada = []
-        for aux in range(saida.size):
-            saidaArredondada.append(round(saida[0][aux], 0))
-        try:
-            letraFinal = str(dic2[tuple(saidaArredondada)])
-        except KeyError:
-            letraFinal = None
-        '''
-
-    erroFinal = somaTotalErro / len(treinamento)
-    erro.write(str(i) + ";" + str(erroFinal))
-
-    somaTotalErroTeste = 0
-    for arquivo in teste:       # loop de teste dos folds
-        entrada = np.loadtxt(os.path.join(caminhoEntrada, arquivo), dtype='float', delimiter="\n")
-        entrada = np.append(entrada, [1.])
-        entrada = np.transpose(entrada) # transpoe de uma matriz linha para uma matriz coluna
-
-        saidaTestada = testaMLP(entrada, pesosV, pesosW)
-        erroQuadraticoTeste = erroQuadratico(saidaTestada, saidaEsperada)
-        somaTotalErroTeste = somaTotalErroTeste + erroQuadraticoTeste
+    '''
+    Testar depois se as variaveis realmente precisam ser globais:
+    global extrator
+    global alfa
+    global epocas
+    global erroMaximo
+    global nroNeuronios
+    '''
     
-    erroFinalTeste = somaTotalErroTeste / len(teste)
-    erro.write(";" + str(erroFinalTeste) + "\n")
+    extrator = str(argv[1])
+    alfa = float(argv[2])
+    epocas = int(argv[3])
+    erroMaximo = float(argv[4])
+    nroNeuronios = int(argv[5])
 
-data = (pesosV, pesosW)
-pickle.dump(data, model)
+    caminhoEntrada = "/home/arthur/SI/IA/EP/dataset1/treinamento/" # pasta selecionada pelo usuario
 
-model.close()
-erro.close()
+    try:
+        caminhoEntrada = os.path.join(caminhoEntrada, extrator)
+        arqExtrator = open(os.path.join(caminhoEntrada, "configExtrator.dat"), "rb")
+    except IOError as err:
+        print("Erro no acesso a pasta com as imagens de entrada: ",err)
+        return
 
-ts = time.time()
-st = datetime.datetime.fromtimestamp(ts).strftime('%d/%m/%Y %H:%M:%S')
-print("Fim da execucao da rede em " + str(st) + "\n\n")
+    i = 1
+    existePasta = True
+    try:
+        while(existePasta == True):
+            caminhoSaida = os.path.join(os.getcwd(),"execucao" + str(i))
+            if os.path.exists(caminhoSaida):
+                i += 1
+            else:
+                existePasta = False
+        os.makedirs(caminhoSaida)
+    except OSError as err:
+        print("Erro de acesso a pasta de saida: ", err)
+        return
+
+    try:
+        config = open(os.path.join(caminhoSaida,"config.txt"), "w")
+        erro = open(os.path.join(caminhoSaida,"erro.txt"), "w")
+        model = open(os.path.join(caminhoSaida,"model.dat"), "wb")
+    except IOError as err:
+        print("Erro na escrita dos arquivos de saida", err)
+        return
+
+    ts = time.time()
+    st = datetime.datetime.fromtimestamp(ts).strftime('%d/%m/%Y %H:%M:%S')
+    print("Iniciando a execucao em " + st)
+    config.write("Execucao em " + st + "\n")
+    erro.write("Execucao em " + st + "\n")
+
+    confExt = pickle.load(arqExtrator)
+    
+    if extrator.startswith("HOG", 0, 3):
+        configText = [
+            "extrator : HOG",
+            "extrator_orientacoes: " + str(confExt[1]),
+            "extrator_pixel_por_celula : " + str(confExt[0]),
+            "extrator_celula_por_bloco : " + str(confExt[2]) + "\n",
+        ]
+
+    elif extrator.startswith("LBP", 0, 3):
+        configText = [
+            "extrator : LBP",
+            "extrator_numero_pontos: " + str(confExt[0]),
+            "extrator_raio : " + str(confExt[1]),
+            "extrator_metodo : uniform\n",
+        ]
+
+    configText += [
+        "rede_alpha : " + str(alfa),
+        "rede_camada_Z_neuronios : " + str(nroNeuronios),
+        "rede_camada_Z_funcao_de_ativacao : sigmoide",
+        "rede_camada_Y_neuronios : 3",
+        "rede_camada_Y_funcao_de_ativacao : sigmoide",
+        "rede_inicializacao_pesos : aleatoria",
+        "rede_min_epocas : 0",
+        "rede_max_epocas : " + str(epocas),
+        "rede_parada_antecipada : loop que vai de 0 a max epocas"
+        ]
+
+    for i in configText:
+        config.write(i + "\n")
+
+    config.close()
+
+    dic1 = {'53': (1,0,0), '58': (0,1,0), '5a': (0,0,1)}    # dicionario 1 ==> para gerar a matriz T (target)
+    dic2 = {(1,0,0) : 'S', (0,1,0) : 'X', (0,0,1) : 'Z'}    # dicionario 2 ==> para verificar depois de rodar a rede a resposta
+
+    try:
+        arquivosPasta = os.listdir(caminhoEntrada)
+    except OSError as err:
+        print("Erro ao listar arquivos da pasta de entrada: ",err)
+        return
+
+    arquivosImagem = list(filter(lambda k: '.txt' in k, arquivosPasta))
+
+    if len(arquivosImagem) == 0:
+        print("Pasta selecionada nao contem imagens .txt!")
+        return
+
+    ordenados = sorted(arquivosImagem)
+
+    listaS = ordenados[0:1000]
+    listaX = ordenados[1000:2000]
+    listaZ = ordenados[2000:3000]
+
+    fold1 = listaS[0:200] + listaX[0:200] + listaZ[0:200]
+    fold2 = listaS[200:400] + listaX[200:400] + listaZ[200:400]
+    fold3 = listaS[400:600] + listaX[400:600] + listaZ[400:600]
+    fold4 = listaS[600:800] + listaX[600:800] + listaZ[600:800]
+    fold5 = listaS[800:1000] + listaX[800:1000] + listaZ[800:1000]
+
+    listaFolds = [fold1, fold2, fold3, fold4, fold5]
+
+    pesosV = None
+    pesosW = None
+    for i in range(5):
+        teste = listaFolds[i]
+        treinamento = []
+        for j in range(5):
+            if(j != i):
+                treinamento = treinamento + listaFolds[j]
+
+        shuffle(treinamento) # embaralha a ordem dos arquivos de treinamento
+
+        somaTotalErro = 0    
+        for arquivo in treinamento:     # loop de treinamento dos folds atuais
+                
+            entrada = np.loadtxt(os.path.join(caminhoEntrada, arquivo), dtype='float', delimiter="\n")
+            entrada = np.append(entrada, [1.])
+            entrada = np.transpose(entrada) # transpoe de uma matriz linha para uma matriz coluna
+            '''
+            Definicoes da saida:
+            53 = S ==> saida esperada = (1, 0, 0)
+            58 = X ==> saida esperada = (0, 1, 0)
+            5a = Z ==> saida esperada = (0, 0, 1)
+            '''
+            letra = None
+            if "_53_" in arquivo:
+                saidaEsperada = np.asarray(dic1['53'])
+                letra = "S"
+            elif "_58_" in arquivo:
+                saidaEsperada = np.asarray(dic1['58'])
+                letra = "X"
+            elif "_5a_" in arquivo:
+                saidaEsperada = np.asarray(dic1['5a'])
+                letra = "Z"
+            else:
+                print("\nERRO: arquivo de entrada nao eh 'S', nem 'X' nem 'Z'! (nome errado ou alterado)\n")
+
+            saida, pesosV, pesosW, erroTreinamento = MLP(entrada,alfa,epocas,erroMaximo,nroNeuronios,saidaEsperada, pesosV, pesosW)
+
+            somaTotalErro = somaTotalErro + erroTreinamento
+            '''
+            saidaArredondada = []
+            for aux in range(saida.size):
+                saidaArredondada.append(round(saida[0][aux], 0))
+            try:
+                letraFinal = str(dic2[tuple(saidaArredondada)])
+            except KeyError:
+                letraFinal = None
+            '''
+        erroFinal = somaTotalErro / len(treinamento)
+        erro.write(str(i) + ";" + str(erroFinal))
+
+        somaTotalErroTeste = 0
+        for arquivo in teste:       # loop de teste dos folds
+            entrada = np.loadtxt(os.path.join(caminhoEntrada, arquivo), dtype='float', delimiter="\n")
+            entrada = np.append(entrada, [1.])
+            entrada = np.transpose(entrada) # transpoe de uma matriz linha para uma matriz coluna
+
+            saidaTestada = testaMLP(entrada, pesosV, pesosW)
+            erroQuadraticoTeste = erroQuadratico(saidaTestada, saidaEsperada)
+            somaTotalErroTeste = somaTotalErroTeste + erroQuadraticoTeste
+        
+        erroFinalTeste = somaTotalErroTeste / len(teste)
+        erro.write(";" + str(erroFinalTeste) + "\n")
+
+    data = (pesosV, pesosW)
+    pickle.dump(data, model)
+
+    model.close()
+    erro.close()
+
+    ts = time.time()
+    st = datetime.datetime.fromtimestamp(ts).strftime('%d/%m/%Y %H:%M:%S')
+    print("Fim da execucao da rede em " + str(st) + "\n\n")
+
+if __name__ == "__main__":
+    main(sys.argv)
