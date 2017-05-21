@@ -21,6 +21,7 @@ def main(argv):
 		print("argumento-01: Inteiro que define o numero de pixels por celula")
 		print("argumento-02: Inteiro que define o numero de orientacoes")
 		print("argumento-03: Inteiro que define o numero de celulas por bloco")
+		print("argumento-04: (opcional) '-verbose' (sem aspas): prints para debugging")
 		return
 
 	ppc = int(argv[1]) # pixels por celula, definida pelo usuario
@@ -67,6 +68,7 @@ def main(argv):
 			A = color.rgb2gray(imread(os.path.join(caminhoEntrada, imagem)))
 		except IOError as err:
 			print("Erro na leitura da imagem ", imagem, ": ", err)
+			continue
 
 		v, B = hog(A,orientations=ori, pixels_per_cell=(ppc, ppc),
 			cells_per_block=(cpb, cpb), visualise=True)
