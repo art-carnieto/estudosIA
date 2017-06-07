@@ -46,38 +46,42 @@ def MLP(entrada,taxaDeAprendizado,epocas,erroMaximo,nroNeuronios,target, pesosV=
 
     for epoca in xrange(epocas):
         
-        #calculo dos valores e ativação
-        Z_in = np.dot(X,v)
+        for arquivo in treinamento:     # loop de treinamento dos folds atuais
+               
+            #calculo dos valores e ativação
+            Z_in = np.dot(X,v)
 
-        Z = sigmoid(Z_in)
+            Z = sigmoid(Z_in)
 
-        Y_in = np.dot(Z,w)
+            Y_in = np.dot(Z,w)
 
-        Y = sigmoid(Y_in)
+            Y = sigmoid(Y_in)
 
-        #erro (diferença entre o target)
-        taxaDeErroSaida = T - Y
+            #erro (diferença entre o target)
+            taxaDeErroSaida = T - Y
+                
+            #taxa de erro para segunda camada de pesos (δw[k])
+            taxaDeErroW = taxaDeErroSaida * derSigmoid(Y_in)
             
-        #taxa de erro para segunda camada de pesos (δw[k])
-        taxaDeErroW = taxaDeErroSaida * derSigmoid(Y_in)
-        
-        #∆w[j][k] = α*δw[k]*Z[j]
-        deltaW = taxaDeAprendizado * taxaDeErroW * np.transpose(Z)
+            #∆w[j][k] = α*δw[k]*Z[j]
+            deltaW = taxaDeAprendizado * taxaDeErroW * np.transpose(Z)
 
-        #erro para V (δv_inv[j] = ∑ k=1 δw[k]w[j][k] )
-        taxaDeErroEscondida = taxaDeErroW.dot(np.transpose(w))
+            #erro para V (δv_inv[j] = ∑ k=1 δw[k]w[j][k] )
+            taxaDeErroEscondida = taxaDeErroW.dot(np.transpose(w))
 
-        # δv[j] = δv_in[j] f′(z_in[j])
-        taxaDeErroV = taxaDeErroEscondida * derSigmoid(Z_in)
+            # δv[j] = δv_in[j] f′(z_in[j])
+            taxaDeErroV = taxaDeErroEscondida * derSigmoid(Z_in)
 
-        #∆v[i][j] = αδ[j]
-        deltaV = taxaDeAprendizado * np.transpose(X) * taxaDeErroV
+            #∆v[i][j] = αδ[j]
+            deltaV = taxaDeAprendizado * np.transpose(X) * taxaDeErroV
 
-        #w[j][k](new) = w[j][k](old) + ∆w[j][k]
-        w += deltaW
+            #w[j][k](new) = w[j][k](old) + ∆w[j][k]
+            w += deltaW
 
-        #v[i][j](new) = v[i][j](old) + ∆v[i][j]
-        v += deltaV
+            #v[i][j](new) = v[i][j](old) + ∆v[i][j]
+            v += deltaV
+
+        shuffle(treinamento) # embaralha a ordem dos arquivos de treinamento
 
     erroTreinamento = erroQuadratico(Y, T)
 
@@ -98,6 +102,123 @@ def testaMLP(entrada, pesosV, pesosW):
     Y = sigmoid(Y_in)
 
     return Y
+
+def geraSaidaEsperada(arquivo):
+    if "_41_" in arquivo:
+        saidaEsperada = np.asarray(dic1['_41_'])
+        letra = "A"
+        indice = 0
+    elif "_42_" in arquivo:
+        saidaEsperada = np.asarray(dic1['_42_'])
+        letra = "B"
+        indice = 1
+    elif "_43_" in arquivo:
+        saidaEsperada = np.asarray(dic1['_43_'])
+        letra = "C"
+        indice = 2
+    elif "_44_" in arquivo:
+        saidaEsperada = np.asarray(dic1['_44_'])
+        letra = "D"
+        indice = 3
+    elif "_45_" in arquivo:
+        saidaEsperada = np.asarray(dic1['_45_'])
+        letra = "E"
+        indice = 4
+    elif "_46_" in arquivo:
+        saidaEsperada = np.asarray(dic1['_46_'])
+        letra = "F"
+        indice = 5
+    elif "_47_" in arquivo:
+        saidaEsperada = np.asarray(dic1['_47_'])
+        letra = "G"
+        indice = 6
+    elif "_48_" in arquivo:
+        saidaEsperada = np.asarray(dic1['_48_'])
+        letra = "H"
+        indice = 7
+    elif "_49_" in arquivo:
+        saidaEsperada = np.asarray(dic1['_49_'])
+        letra = "I"
+        indice = 8
+    elif "_4a_" in arquivo:
+        saidaEsperada = np.asarray(dic1['_4a_'])
+        letra = "J"
+        indice = 9
+    elif "_4b_" in arquivo:
+        saidaEsperada = np.asarray(dic1['_4b_'])
+        letra = "K"
+        indice = 10
+    elif "_4c_" in arquivo:
+        saidaEsperada = np.asarray(dic1['_4c_'])
+        letra = "L"
+        indice = 11
+    elif "_4d_" in arquivo:
+        saidaEsperada = np.asarray(dic1['_4d_'])
+        letra = "M"
+        indice = 12
+    elif "_4e_" in arquivo:
+        saidaEsperada = np.asarray(dic1['_4e_'])
+        letra = "N"
+        indice = 13
+    elif "_4f_" in arquivo:
+        saidaEsperada = np.asarray(dic1['_4f_'])
+        letra = "O"
+        indice = 14
+    elif "_50_" in arquivo:
+        saidaEsperada = np.asarray(dic1['_50_'])
+        letra = "P"
+        indice = 15
+    elif "_51_" in arquivo:
+        saidaEsperada = np.asarray(dic1['_51_'])
+        letra = "Q"
+        indice = 16
+    elif "_52_" in arquivo:
+        saidaEsperada = np.asarray(dic1['_52_'])
+        letra = "R"
+        indice = 17
+    elif "_53_" in arquivo:
+        saidaEsperada = np.asarray(dic1['_53_'])
+        letra = "S"
+        indice = 18
+    elif "_54_" in arquivo:
+        saidaEsperada = np.asarray(dic1['_54_'])
+        letra = "T"
+        indice = 19
+    elif "_55_" in arquivo:
+        saidaEsperada = np.asarray(dic1['_55_'])
+        letra = "U"
+        indice = 20
+    elif "_56_" in arquivo:
+        saidaEsperada = np.asarray(dic1['_56_'])
+        letra = "V"
+        indice = 21
+    elif "_57_" in arquivo:
+        saidaEsperada = np.asarray(dic1['_57_'])
+        letra = "W"
+        indice = 22
+    elif "_58_" in arquivo:
+        saidaEsperada = np.asarray(dic1['_58_'])
+        letra = "X"
+        indice = 23
+    elif "_59_" in arquivo:
+        saidaEsperada = np.asarray(dic1['_59_'])
+        letra = "Y"
+        indice = 24
+    elif "_5a_" in arquivo:
+        saidaEsperada = np.asarray(dic1['_5a_'])
+        letra = "Z"
+        indice = 25
+    else:
+        print("\nERRO: arquivo de entrada nao faz parte do conjunto de letras! (nome errado ou alterado)\n")
+        return None, None, None
+
+    return saidaEsperada, letra, indice
+
+def somaColuna(matrizBase, vetorSoma, col):
+    for i in range(len(matrizBase)):
+        matrizBase[i][col] = matrizBase[i][col] + vetorSoma[i]
+
+    return matrizBase
 
 def main(argv):
 
@@ -124,6 +245,8 @@ def main(argv):
     global erroMaximo
     global nroNeuronios
     '''
+    global dic1
+    global dic2
     
     extrator = str(argv[1])
     alfa = float(argv[2])
@@ -284,6 +407,8 @@ dic2 = {(1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0) : 'A',
         (0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0) : 'Y',
         (0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1) : 'Z'}
 
+    matrizConfusao = np.zeros((26,26))
+
     try:
         arquivosPasta = os.listdir(caminhoEntrada)
     except OSError as err:
@@ -309,9 +434,21 @@ dic2 = {(1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0) : 'A',
     fold5 = listaS[800:1000] + listaX[800:1000] + listaZ[800:1000]
 
     listaFolds = [fold1, fold2, fold3, fold4, fold5]
-
+    #MLP (entrada,taxaDeAprendizado,epocas,erroMaximo,nroNeuronios,target,pesosV=None,pesosW=None)
     pesosV = None
     pesosW = None
+    MatrizImagens = None
+
+    # pseudo codigo da entrada das imagens para uma matriz
+    #for
+    '''
+        entrada = np.loadtxt(os.path.join(caminhoEntrada, arquivo), dtype='float', delimiter="\n")
+        entrada = np.append(entrada, [1.])
+        entrada = np.transpose(entrada) # transpoe de uma matriz linha para uma matriz coluna
+
+        // MatrizImagens += entrada
+    '''
+
     for i in range(5):
         teste = listaFolds[i]
         treinamento = []
@@ -319,26 +456,13 @@ dic2 = {(1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0) : 'A',
             if(j != i):
                 treinamento = treinamento + listaFolds[j]
 
-        shuffle(treinamento) # embaralha a ordem dos arquivos de treinamento
+            somaTotalErro = 0    
 
-        somaTotalErro = 0    
-        for arquivo in treinamento:     # loop de treinamento dos folds atuais
-                
-            entrada = np.loadtxt(os.path.join(caminhoEntrada, arquivo), dtype='float', delimiter="\n")
-            entrada = np.append(entrada, [1.])
-            entrada = np.transpose(entrada) # transpoe de uma matriz linha para uma matriz coluna
-            letra = None
-            if "_53_" in arquivo:
-                saidaEsperada = np.asarray(dic1['_53_'])
-                letra = "S"
-            elif "_58_" in arquivo:
-                saidaEsperada = np.asarray(dic1['_58_'])
-                letra = "X"
-            elif "_5a_" in arquivo:
-                saidaEsperada = np.asarray(dic1['_5a_'])
-                letra = "Z"
-            else:
-                print("\nERRO: arquivo de entrada nao eh 'S', nem 'X' nem 'Z'! (nome errado ou alterado)\n")
+
+
+            
+            #saidaEsperada, letra = geraSaidaEsperada(arquivo)
+
 
             saida, pesosV, pesosW, erroTreinamento = MLP(entrada,alfa,epocas,erroMaximo,nroNeuronios,saidaEsperada, pesosV, pesosW)
 
@@ -362,8 +486,16 @@ dic2 = {(1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0) : 'A',
             entrada = np.transpose(entrada) # transpoe de uma matriz linha para uma matriz coluna
 
             saidaTestada = testaMLP(entrada, pesosV, pesosW)
-            erroQuadraticoTeste = erroQuadratico(saidaTestada, saidaEsperada)
+            saidaEsperadaTeste, letraTeste, indiceTeste = geraSaidaEsperada(arquivo)
+
+            erroQuadraticoTeste = erroQuadratico(saidaTestada, saidaEsperadaTeste)
             somaTotalErroTeste = somaTotalErroTeste + erroQuadraticoTeste
+
+            saidaArredondadaTeste = []
+            for aux in range(saida.size):
+                saidaArredondadaTeste.append(round(saidaTestada[0][aux], 0))
+
+            somaColuna(matrizConfusao, saidaArredondadaTeste, indiceTeste)
         
         erroFinalTeste = somaTotalErroTeste / len(teste)
         erro.write(";" + str(erroFinalTeste) + "\n")
