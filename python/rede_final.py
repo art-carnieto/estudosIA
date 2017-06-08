@@ -119,10 +119,6 @@ def MLP(entrada,taxaDeAprendizado,epocas,erroMaximo,nroNeuronios,target, pesosV,
             
             T = target[0][i][0]
             
-            print(type(T))
-            print("---")
-            print(T)
-            
             if len(T.shape) == 1:
                 T.shape = (T.shape[0], 1)
             
@@ -146,16 +142,6 @@ def MLP(entrada,taxaDeAprendizado,epocas,erroMaximo,nroNeuronios,target, pesosV,
                 
             #taxa de erro para segunda camada de pesos (δw[k])
             taxaDeErroW = taxaDeErroSaida * derSigmoid(Y_in)
-            
-            print (derSigmoid(Y_in))
-            print (taxaDeErroSaida)
-            
-            print(X.shape)
-            print(v.shape)
-            print(Z.shape)
-            print(w.shape)
-            print(Y.shape)
-            print(T.shape)
             
             #∆w[j][k] = α*δw[k]*Z[j]
             deltaW = taxaDeAprendizado * taxaDeErroW * np.transpose(Z) 
@@ -421,8 +407,6 @@ def main(argv):
 
     config.close()
 
-
-
     matrizConfusao = np.zeros((26,26))
 
     try:
@@ -454,10 +438,7 @@ def main(argv):
     pesosV = None
     pesosW = None
     
-    
     #arquivos
-    #matrixTodasImagens = np.zeros((0,0))
-    matrixMetaImagens = np.zeros((0,3))
 
     #arq = open("teste.txt","w")
     np.set_printoptions(threshold = np.nan)
@@ -468,22 +449,29 @@ def main(argv):
         entrada = np.append(entrada, [1.])
         if len(entrada.shape) == 1:
             entrada.shape = (entrada.shape[0], 1)
-        #linha baxio comentada porque vamos transpor depois 
+        #linha abaixo comentada porque vamos transpor depois 
         entrada = np.transpose(entrada) # transpoe de uma matriz linha para uma matriz coluna
        
         if not 'matrixTodasImagens' in locals():
-            matrixTodasImagens = np.zeros((0,entrada.shape[1]))
-        
-        matrixTodasImagens = np.vstack([matrixTodasImagens, entrada])
-
-        meta = np.zeros((0,0))
+            matrixTodasImagens = np.zeros((0,4)) #entrada.shape[1]
 
         saida,letra,indice = geraSaidaEsperada(arquivo)
 
-        auxMeta = np.array([saida,letra,indice])
-        matrixMetaImagens = np.vstack([matrixMetaImagens,auxMeta])
+        auxMeta = np.array([saida,letra,indice,entrada])
+        
+        matrixTodasImagens = np.vstack([matrixTodasImagens,auxMeta])
+        print(matrixTodasImagens.shape)
         
         #arq.write(arquivo + ", " + auxMeta[0] + ", " + auxMeta[1] + ", " + auxMeta[2])
+    
+    #print(type(matrixTodasImagens))
+    valor = 0
+    print(type(matrixTodasImagens[valor]))
+    print(matrixTodasImagens[valor])
+    
+    #matrixTodasImagens[imagem][informação]
+    
+    return
     
     #matrixTodasImagens = np.transpose(matrixTodasImagens)
     matrixMetaImagens = np.transpose(matrixMetaImagens)
@@ -491,9 +479,11 @@ def main(argv):
     vInicial = criaMatrizPesosDefault(matrixTodasImagens.shape[1],nroNeuronios)
     wInicial = criaMatrizPesosDefault(nroNeuronios,matrixMetaImagens[0][0].shape[0])
     
+    '''
     print(matrixTodasImagens.shape)
     print(matrixMetaImagens[0][0])
     print("")
+    '''
     
     #folds
     for i in range(5):

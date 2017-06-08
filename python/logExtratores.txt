@@ -13,3 +13,8 @@ ppc = 64
 ori = 10
 cpb = 1
 
+HOG1: ../../dataset1/amostra/HOG1
+ppc = 12
+ori = 9
+cpb = 1
+
