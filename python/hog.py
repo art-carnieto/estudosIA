@@ -35,7 +35,7 @@ def main(argv):
 
 	try:
 		# caminhoEntrada = os.getcwd() # os.getcwd ==> pasta atual do arquivo hog.py
-		caminhoEntrada = "/home/arthur/SI/IA/EP/dataset1/treinamento" # pasta selecionada pelo usuario
+		caminhoEntrada = "../../dataset1/amostra" # pasta selecionada pelo usuario
 		arquivosPasta = os.listdir(caminhoEntrada)
 	except OSError as err:
 		print("Erro no acesso a pasta com as imagens de entrada: ",err)
