@@ -420,30 +420,10 @@ def main(argv):
     if len(arquivosImagem) == 0:
         print("Pasta selecionada nao contem imagens .txt!")
         return
-
+    
     ordenados = sorted(arquivosImagem)
-
-    listaS = ordenados[0:1000]
-    listaX = ordenados[1000:2000]
-    listaZ = ordenados[2000:3000]
-
-    fold1 = listaS[0:200] + listaX[0:200] + listaZ[0:200]
-    fold2 = listaS[200:400] + listaX[200:400] + listaZ[200:400]
-    fold3 = listaS[400:600] + listaX[400:600] + listaZ[400:600]
-    fold4 = listaS[600:800] + listaX[600:800] + listaZ[600:800]
-    fold5 = listaS[800:1000] + listaX[800:1000] + listaZ[800:1000]
-
-    listaFolds = [fold1, fold2, fold3, fold4, fold5]
-    #MLP (entrada,taxaDeAprendizado,epocas,erroMaximo,nroNeuronios,target,pesosV=None,pesosW=None)
-    pesosV = None
-    pesosW = None
     
-    #arquivos
-
-    #arq = open("teste.txt","w")
-    np.set_printoptions(threshold = np.nan)
-    
-    for arquivo in arquivosImagem: 
+    for arquivo in ordenados: 
 
         entrada = np.loadtxt(os.path.join(caminhoEntrada, arquivo), dtype='float', delimiter="\n")
         entrada = np.append(entrada, [1.])
@@ -460,18 +440,38 @@ def main(argv):
         auxMeta = np.array([saida,letra,indice,entrada])
         
         matrixTodasImagens = np.vstack([matrixTodasImagens,auxMeta])
-        print(matrixTodasImagens.shape)
+        
         
         #arq.write(arquivo + ", " + auxMeta[0] + ", " + auxMeta[1] + ", " + auxMeta[2])
+
+    imagensPorLetra = matrixTodasImagens.shape[0] / 26
+
+    listaLetras = np.zeros((26,imagensPorLetra),dtype='object')
     
-    #print(type(matrixTodasImagens))
-    valor = 0
-    print(type(matrixTodasImagens[valor]))
-    print(matrixTodasImagens[valor])
-    
-    #matrixTodasImagens[imagem][informação]
+    for i in range(listaLetras.shape[0]): #letras
+        for j in range(listaLetras.shape[1]): #imagem em letras
+            listaLetras[i][j] = matrixTodasImagens[i*3+j]
+            print(i,j,listaLetras[i][j])
     
     return
+
+    listaS = ordenados[0:1000]
+    listaX = ordenados[1000:2000]
+    listaZ = ordenados[2000:3000]
+
+    fold1 = listaS[0:200] + listaX[0:200] + listaZ[0:200]
+    fold2 = listaS[200:400] + listaX[200:400] + listaZ[200:400]
+    fold3 = listaS[400:600] + listaX[400:600] + listaZ[400:600]
+    #fold4 = listaS[600:800] + listaX[600:800] + listaZ[600:800]
+    #fold5 = listaS[800:1000] + listaX[800:1000] + listaZ[800:1000]
+
+    listaFolds = [fold1, fold2, fold3] #, fold4, fold5]
+    #MLP (entrada,taxaDeAprendizado,epocas,erroMaximo,nroNeuronios,target,pesosV=None,pesosW=None)
+    
+    #arquivos
+
+    #arq = open("teste.txt","w")
+    np.set_printoptions(threshold = np.nan)
     
     #matrixTodasImagens = np.transpose(matrixTodasImagens)
     matrixMetaImagens = np.transpose(matrixMetaImagens)
