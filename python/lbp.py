@@ -41,80 +41,91 @@ def main(argv):
 		if(argv[3] == "-verbose"):
 			verbose = True
 
-	try:
-		# caminhoEntrada = os.getcwd() # os.getcwd ==> pasta atual do arquivo lbp.py
-		caminhoEntrada = "/home/arthur/SI/IA/EP/dataset1/treinamento" # pasta selecionada pelo usuario
-		arquivosPasta = os.listdir(caminhoEntrada)
-	except OSError as err:
-		print("Erro no acesso a pasta com as imagens de entrada: ",err)
-		return
+	# caminhoEntrada = os.getcwd() # os.getcwd ==> pasta atual do arquivo hog.py
+	pastaBase = "/home/arthur/SI/IA/EP" # pasta selecionada pelo usuario
 
-	arquivosImagem = list(filter(lambda k: '.png' in k, arquivosPasta))
+	caminhos = []
+	#parte 1
+	#caminhos.append(os.path.join(pastaBase, "dataset1", "testes"))
+	#caminhos.append(os.path.join(pastaBase, "dataset1", "treinamento"))
+	
+	#parte 2
+	caminhos.append(os.path.join(pastaBase, "dataset2", "testes"))
+	caminhos.append(os.path.join(pastaBase, "dataset2", "treinamento"))
 
-	if len(arquivosImagem) == 0:
-		print("Pasta selecionada nao contem imagens .png")
-		return
+	for caminhoEntrada in caminhos:
+		try:
+			arquivosPasta = os.listdir(caminhoEntrada)
+		except OSError as err:
+			print("Erro no acesso a pasta com as imagens de entrada: ",err)
+			return
 
-	i = 1
-	existePasta = True
-	try:
-		while(existePasta == True):
-			caminhoSaida = os.path.join(caminhoEntrada,"LBP" + str(i))
-			if os.path.exists(caminhoSaida):
-				i += 1
-			else:
-				existePasta = False
-		os.makedirs(caminhoSaida)
-	except OSError as err:
-		print("Erro de acesso a pasta de saida: ", err)
-		return
+		arquivosImagem = list(filter(lambda k: '.png' in k, arquivosPasta))
 
-	for imagem in arquivosImagem:
-		if (verbose == True):
-			print("\tProcessando imagem " + imagem)
+		if len(arquivosImagem) == 0:
+			print("Pasta selecionada nao contem imagens .png")
+			return
+
+		i = 1
+		existePasta = True
+		try:
+			while(existePasta == True):
+				caminhoSaida = os.path.join(caminhoEntrada,"LBP" + str(i))
+				if os.path.exists(caminhoSaida):
+					i += 1
+				else:
+					existePasta = False
+			os.makedirs(caminhoSaida)
+		except OSError as err:
+			print("Erro de acesso a pasta de saida: ", err)
+			return
+
+		for imagem in arquivosImagem:
+			if (verbose == True):
+				print("\tProcessando imagem " + imagem)
+
+			try:
+				A = color.rgb2gray(imread(os.path.join(caminhoEntrada, imagem)))
+			except IOError as err:
+				print("Erro na leitura da imagem ", imagem, ": ", err)
+				continue
+
+			v = describe(A, numPoints, radius)
+
+			# trocando a extensao .png por .txt:
+			saida = imagem[:-3]
+			saida = saida + "txt"
+
+			try:
+				f = open(os.path.join(caminhoSaida, saida), 'w')
+				for x in np.nditer(v):
+					f.write(str(x) + "\n")
+			except IOError as err:
+				print("Erro na escrita do arquivo ", saida, ": ", err)
 
 		try:
-			A = color.rgb2gray(imread(os.path.join(caminhoEntrada, imagem)))
+			arqConfig = open(os.path.join(caminhoSaida,"configExtrator.dat"), "wb")
 		except IOError as err:
-			print("Erro na leitura da imagem ", imagem, ": ", err)
-			continue
+			print("Erro na escrita do arquivo configExtrator.dat", err)
+			return
 
-		v = describe(A, numPoints, radius)
-
-		# trocando a extensao .png por .txt:
-		saida = imagem[:-3]
-		saida = saida + "txt"
+		data = (numPoints, radius)
+		pickle.dump(data, arqConfig)
+		arqConfig.close()
 
 		try:
-			f = open(os.path.join(caminhoSaida, saida), 'w')
-			for x in np.nditer(v):
-				f.write(str(x) + "\n")
+			arqLog = open(os.path.join(os.getcwd(),"logExtratores.txt"), "a")
 		except IOError as err:
-			print("Erro na escrita do arquivo ", saida, ": ", err)
+			print("Erro na escrita do arquivo logExtratores.txt", err)
+			return
 
-	try:
-		arqConfig = open(os.path.join(caminhoSaida,"configExtrator.dat"), "wb")
-	except IOError as err:
-		print("Erro na escrita do arquivo configExtrator.dat", err)
-		return
-
-	data = (numPoints, radius)
-	pickle.dump(data, arqConfig)
-	arqConfig.close()
-
-	try:
-		arqLog = open(os.path.join(os.getcwd(),"logExtratores.txt"), "a")
-	except IOError as err:
-		print("Erro na escrita do arquivo logExtratores.txt", err)
-		return
-
-	texto = ["LBP" + str(i) + ": " + caminhoSaida + "\n",
-			 "numPoints = " + str(numPoints) + "\n",
-			 "radius = " + str(radius) + "\n\n"
-	]
-	for linha in texto:
-		arqLog.write(linha)
-	arqLog.close()
+		texto = ["LBP" + str(i) + ": " + caminhoSaida + "\n",
+				 "numPoints = " + str(numPoints) + "\n",
+				 "radius = " + str(radius) + "\n\n"
+		]
+		for linha in texto:
+			arqLog.write(linha)
+		arqLog.close()
 
 if __name__ == "__main__":
     main(sys.argv)
