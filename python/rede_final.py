@@ -7,7 +7,7 @@ import datetime
 from random import shuffle
 import pickle
 import sys
-
+import matplotlib.pyplot as plt
 
 '''
 41 = A
@@ -90,7 +90,6 @@ dic2 = {(1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0) : 'A',
         (0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0) : 'Y',
         (0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1) : 'Z'}
 
-
 # np.random.seed(1) #semente de aleatoriedade
 
 def sigmoid(x):
@@ -103,21 +102,28 @@ def erroQuadratico(x, T):
     return np.sum(np.power(T - x,2))/2
 
 def criaMatrizPesosDefault(linhas,colunas):
-	return np.random.random((linhas,colunas)) - 1
+    return np.random.random((linhas,colunas)) - 1
 
-def MLP(entrada,taxaDeAprendizado,epocas,erroMaximo,nroNeuronios,target, pesosV, pesosW):
+def MLP(dados,taxaDeAprendizado,epocas,erroMaximo,nroNeuronios, pesosV, pesosW):
     
     taxaDeErroSaida = 0
-
+    erroTreinamento = []
+    todosErrosEpocas = []
+    erroValidacao = []
+    todosErrosValidacao = []
+    
+    #TESTE TREINAMENTO
     for epoca in xrange(epocas):
-        
-        for i in range(entrada.shape[0]):     # loop de treinamento dos folds atuais
+        #VERIFICAR SE FUNCIONAM ESSES SHAPES!!!!!!!!!!!!!!!!
+        for i in range(dados.shape[0]):     # loop de treinamento dos folds atuais
             
-            X = entrada[i]
+            X = dados[i][3]
             if len(X.shape) == 1:
                 X.shape = (X.shape[0], 1)
-            
-            T = target[0][i][0]
+
+            X = np.transpose(X)
+
+            T = dados[i][0]
             
             if len(T.shape) == 1:
                 T.shape = (T.shape[0], 1)
@@ -139,12 +145,13 @@ def MLP(entrada,taxaDeAprendizado,epocas,erroMaximo,nroNeuronios,target, pesosV,
 
             #erro (diferença entre o target)
             taxaDeErroSaida = T - Y
+            erroTreinamento.append(taxaDeErroSaida)
                 
             #taxa de erro para segunda camada de pesos (δw[k])
             taxaDeErroW = taxaDeErroSaida * derSigmoid(Y_in)
             
             #∆w[j][k] = α*δw[k]*Z[j]
-            deltaW = taxaDeAprendizado * taxaDeErroW * np.transpose(Z) 
+            deltaW = taxaDeAprendizado * np.dot(np.transpose(Z),taxaDeErroW)
 
             #erro para V (δv_inv[j] = ∑ k=1 δw[k]w[j][k] )
             taxaDeErroEscondida = taxaDeErroW.dot(np.transpose(w))
@@ -152,19 +159,45 @@ def MLP(entrada,taxaDeAprendizado,epocas,erroMaximo,nroNeuronios,target, pesosV,
             # δv[j] = δv_in[j] f′(z_in[j])
             taxaDeErroV = taxaDeErroEscondida * derSigmoid(Z_in)
 
-            #∆v[i][j] = αδ[j]
-            deltaV = taxaDeAprendizado * np.transpose(X) * taxaDeErroV
+            #∆v[i][j] = αδv[j]x[i]
+            deltaV = taxaDeAprendizado * np.dot(np.transpose(X),taxaDeErroV)
 
             #w[j][k](new) = w[j][k](old) + ∆w[j][k]
             w += deltaW
 
             #v[i][j](new) = v[i][j](old) + ∆v[i][j]
             v += deltaV
+        
+        #TESTE VALIDACAO
+        for i in range(dados.shape[0]):     # loop de teste do fold de teste atual
+            X = dados[i][3]
+            T = dados[i][0]
+            Z_in = np.dot(X,pesosV)
+            Z = sigmoid(Z_in)
+            Y_in = np.dot(Z,pesosW)
+            Y = sigmoid(Y_in)
+            erroValidacao.append(T - Y)
+        
+        erroTreinamento = np.asarray(erroTreinamento)
+        erroValidacao = np.asarray(erroValidacao)
+        
+        todosTarget = dados[0:0] #testar depois
 
-        #shuffle(treinamento) # embaralha a ordem dos arquivos de treinamento
-
-    erroTreinamento = erroQuadratico(Y, T)
-
+        erroTreinoEpoca = erroQuadratico(erroTreinamento, dados[0])
+        erroValidacaoEpoca = erroQuadratico(erroValidacao, dados[0])
+        
+        todosErrosEpocas.append(erroTreinoEpoca)
+        todosErrosValidacao.append(erroValidacaoEpoca)
+        
+        #shuffle(dados) # embaralha a ordem dos arquivos de treinamento e teste ao mesmo tempo
+    
+    todosErrosEpocas = np.asarray(todosErrosEpocas)
+    todosErrosValidacao = np.asarray(todosErrosValidacao)
+    plt.plot(todosErrosEpocas)
+    plt.plot(todosErrosValidacao)
+    plt.savefig('erros.png')
+    plt.close()
+     
     return Y, v, w, erroTreinamento
 
 def testaMLP(entrada, pesosV, pesosW):
@@ -336,6 +369,7 @@ def main(argv):
 
     caminhoEntrada = "../../dataset1/" # pasta selecionada pelo usuario
     #/IA/dataset1/HOG1
+    #/home/arthur/SI/IA/EP/dataset1/treinamento/
     
     try:
         caminhoEntrada = os.path.join(caminhoEntrada, extrator)
@@ -422,6 +456,8 @@ def main(argv):
         return
     
     ordenados = sorted(arquivosImagem)
+
+    matrixTodasImagens = np.zeros((0,4))
     
     for arquivo in ordenados: 
 
@@ -429,61 +465,69 @@ def main(argv):
         entrada = np.append(entrada, [1.])
         if len(entrada.shape) == 1:
             entrada.shape = (entrada.shape[0], 1)
-        #linha abaixo comentada porque vamos transpor depois 
         entrada = np.transpose(entrada) # transpoe de uma matriz linha para uma matriz coluna
        
-        if not 'matrixTodasImagens' in locals():
-            matrixTodasImagens = np.zeros((0,4)) #entrada.shape[1]
+        #if not 'matrixTodasImagens' in locals():
+            #matrixTodasImagens = np.zeros((0,4))
 
         saida,letra,indice = geraSaidaEsperada(arquivo)
 
         auxMeta = np.array([saida,letra,indice,entrada])
         
         matrixTodasImagens = np.vstack([matrixTodasImagens,auxMeta])
-        
-        
-        #arq.write(arquivo + ", " + auxMeta[0] + ", " + auxMeta[1] + ", " + auxMeta[2])
 
-    imagensPorLetra = matrixTodasImagens.shape[0] / 26
+    #imagensPorLetra = matrixTodasImagens.shape[0] / 26
 
-    listaLetras = np.zeros((26,imagensPorLetra),dtype='object')
+    #listaLetras = np.zeros((26,imagensPorLetra), dtype='object')
     
+    #dados[linha][informação (saida,letra,indice,entrada)][segunda dimenção da informação (para saida / entrada)]
+    
+    #dados[linha][3][iterador] -> entrada (X)
+    #dados[linha][0][iterador] -> saida (target)
+    
+    '''
     for i in range(listaLetras.shape[0]): #letras
         for j in range(listaLetras.shape[1]): #imagem em letras
-            listaLetras[i][j] = matrixTodasImagens[i*3+j]
-            print(i,j,listaLetras[i][j])
+            listaLetras[i][j] = matrixTodasImagens[i * imagensPorLetra + j]
+            print(listaLetras[i][j][1])
+    
+    for i in range(3): #letras
+        print(listaLetras[9][i][1])
+        
+    print(listaLetras.shape[0])
+    print(listaLetras.shape[1])
+    print("-------")
+    print(listaLetras[9][1][1])
     
     return
-
-    listaS = ordenados[0:1000]
-    listaX = ordenados[1000:2000]
-    listaZ = ordenados[2000:3000]
+    '''
+    listaS = matrixTodasImagens[0:1000]
+    listaX = matrixTodasImagens[1000:2000]
+    listaZ = matrixTodasImagens[2000:3000]
 
     fold1 = listaS[0:200] + listaX[0:200] + listaZ[0:200]
     fold2 = listaS[200:400] + listaX[200:400] + listaZ[200:400]
     fold3 = listaS[400:600] + listaX[400:600] + listaZ[400:600]
-    #fold4 = listaS[600:800] + listaX[600:800] + listaZ[600:800]
-    #fold5 = listaS[800:1000] + listaX[800:1000] + listaZ[800:1000]
+    fold4 = listaS[600:800] + listaX[600:800] + listaZ[600:800]
+    fold5 = listaS[800:1000] + listaX[800:1000] + listaZ[800:1000]
 
-    listaFolds = [fold1, fold2, fold3] #, fold4, fold5]
+    listaFolds = [fold1, fold2, fold3, fold4, fold5]
     #MLP (entrada,taxaDeAprendizado,epocas,erroMaximo,nroNeuronios,target,pesosV=None,pesosW=None)
     
-    #arquivos
-
-    #arq = open("teste.txt","w")
     np.set_printoptions(threshold = np.nan)
     
     #matrixTodasImagens = np.transpose(matrixTodasImagens)
-    matrixMetaImagens = np.transpose(matrixMetaImagens)
+    #matrixMetaImagens = np.transpose(matrixMetaImagens)
 
-    vInicial = criaMatrizPesosDefault(matrixTodasImagens.shape[1],nroNeuronios)
-    wInicial = criaMatrizPesosDefault(nroNeuronios,matrixMetaImagens[0][0].shape[0])
-    
-    '''
-    print(matrixTodasImagens.shape)
-    print(matrixMetaImagens[0][0])
+    print("matrixTodasImagens: shape = " + str(matrixTodasImagens.shape) + "\t len = " + str(len(matrixTodasImagens)) + "\t type = " + str(type(matrixTodasImagens)))
+    print("matrixTodasImagens[0][0]: shape = " + str(matrixTodasImagens[0][0].shape) + "\t len = " + str(len(matrixTodasImagens[0][0])) + "\t type = " + str(type(matrixTodasImagens[0][0])))
+    print("matrixTodasImagens[0][1]: shape = nao tem shape! \t len = " + str(len(matrixTodasImagens[0][1])) + "\t type = " + str(type(matrixTodasImagens[0][1])))
+    print("matrixTodasImagens[0][2]: shape = nao tem shape! \t len = nao tem len! \t type = " + str(type(matrixTodasImagens[0][2])))
+    print("matrixTodasImagens[0][3]: shape = " + str(matrixTodasImagens[0][3].shape) + "\t len = " + str(len(matrixTodasImagens[0][3])) + "\t type = " + str(type(matrixTodasImagens[0][3])))
     print("")
-    '''
+
+    vInicial = criaMatrizPesosDefault(matrixTodasImagens[0][3].shape[1],nroNeuronios)
+    wInicial = criaMatrizPesosDefault(nroNeuronios,matrixTodasImagens[0][0].shape[0])
     
     #folds
     for i in range(5):
@@ -495,9 +539,7 @@ def main(argv):
 
             somaTotalErro = 0    
 
-            #saidaEsperada, letra = geraSaidaEsperada(arquivo)
-
-            saida, pesosV, pesosW, erroTreinamento = MLP(matrixTodasImagens,alfa,epocas,erroMaximo,nroNeuronios,matrixMetaImagens, vInicial, wInicial)
+            saida, pesosV, pesosW, erroTreinamento = MLP(matrixTodasImagens,alfa,epocas,erroMaximo,nroNeuronios, vInicial, wInicial)
 
             somaTotalErro = somaTotalErro + erroTreinamento
             '''
