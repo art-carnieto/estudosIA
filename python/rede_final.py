@@ -98,8 +98,8 @@ def sigmoid(x):
 def derSigmoid(x):
     return np.exp(x) / np.power((np.exp(x)+1),2)
 
-def erroQuadratico(x, T):
-    return np.sum(np.power(T - x,2))/2
+def erroQuadratico(erros):
+    return np.sum(np.power(erros,2))/(2*len(erros))
 
 def criaMatrizPesosDefault(linhas,colunas):
     return np.random.random((linhas,colunas)) - 1
@@ -107,9 +107,9 @@ def criaMatrizPesosDefault(linhas,colunas):
 def MLP(dados,taxaDeAprendizado,epocas,erroMaximo,nroNeuronios, pesosV, pesosW):
     
     taxaDeErroSaida = 0
-    erroTreinamento = []
+    erroTreinamento = np.zeros((0,26))
+    erroValidacao = np.zeros((0,26))
     todosErrosEpocas = []
-    erroValidacao = []
     todosErrosValidacao = []
     
     #TESTE TREINAMENTO
@@ -145,7 +145,7 @@ def MLP(dados,taxaDeAprendizado,epocas,erroMaximo,nroNeuronios, pesosV, pesosW):
 
             #erro (diferença entre o target)
             taxaDeErroSaida = T - Y
-            erroTreinamento.append(taxaDeErroSaida)
+            erroTreinamento = np.vstack([erroTreinamento, taxaDeErroSaida])
                 
             #taxa de erro para segunda camada de pesos (δw[k])
             taxaDeErroW = taxaDeErroSaida * derSigmoid(Y_in)
@@ -176,16 +176,15 @@ def MLP(dados,taxaDeAprendizado,epocas,erroMaximo,nroNeuronios, pesosV, pesosW):
             Z = sigmoid(Z_in)
             Y_in = np.dot(Z,pesosW)
             Y = sigmoid(Y_in)
-            erroValidacao.append(T - Y)
+            erroValidacao = np.vstack([erroValidacao, (T - Y)])
         
-        erroTreinamento = np.asarray(erroTreinamento)
         erroValidacao = np.asarray(erroValidacao)
-        
-        todosTarget = dados[0:0] #testar depois
 
-        erroTreinoEpoca = erroQuadratico(erroTreinamento, dados[0])
-        erroValidacaoEpoca = erroQuadratico(erroValidacao, dados[0])
-        
+        erroTreinoEpoca = erroQuadratico(erroTreinamento)
+        print(erroTreinoEpoca)
+        erroValidacaoEpoca = erroQuadratico(erroValidacao)
+        print(erroValidacaoEpoca)
+
         todosErrosEpocas.append(erroTreinoEpoca)
         todosErrosValidacao.append(erroValidacaoEpoca)
         
@@ -367,7 +366,7 @@ def main(argv):
     erroMaximo = float(argv[4])
     nroNeuronios = int(argv[5])
 
-    caminhoEntrada = "../../dataset1/" # pasta selecionada pelo usuario
+    caminhoEntrada = "/home/arthur/SI/IA/EP/dataset1/treinamento/" # pasta selecionada pelo usuario
     #/IA/dataset1/HOG1
     #/home/arthur/SI/IA/EP/dataset1/treinamento/
     
