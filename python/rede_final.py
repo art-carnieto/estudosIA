@@ -104,26 +104,26 @@ def erroQuadratico(erros):
 def criaMatrizPesosDefault(linhas,colunas):
     return np.random.random((linhas,colunas)) - 1
 
-def MLP(dados,taxaDeAprendizado,epocas,erroMaximo,nroNeuronios, pesosV, pesosW):
+def MLP(dadosTreinamento, dadosTeste,taxaDeAprendizado,epocas,erroMaximo,nroNeuronios, pesosV, pesosW):
     
-    taxaDeErroSaida = 0
-    erroTreinamento = np.zeros((0,26))
-    erroValidacao = np.zeros((0,26))
     todosErrosEpocas = []
     todosErrosValidacao = []
     
     #TESTE TREINAMENTO
-    for epoca in xrange(epocas):
+    for epoca in range(epocas):
+        erroTreinamento = np.zeros((0,26))
+        erroValidacao = np.zeros((0,26))
+
         #VERIFICAR SE FUNCIONAM ESSES SHAPES!!!!!!!!!!!!!!!!
-        for i in range(dados.shape[0]):     # loop de treinamento dos folds atuais
+        for i in range(dadosTreinamento.shape[0]):     # loop de treinamento dos folds atuais
             
-            X = dados[i][3]
+            X = dadosTreinamento[i][3]
             if len(X.shape) == 1:
                 X.shape = (X.shape[0], 1)
 
             X = np.transpose(X)
 
-            T = dados[i][0]
+            T = dadosTreinamento[i][0]
             
             if len(T.shape) == 1:
                 T.shape = (T.shape[0], 1)
@@ -133,7 +133,7 @@ def MLP(dados,taxaDeAprendizado,epocas,erroMaximo,nroNeuronios, pesosV, pesosW):
             
             v = pesosV
             w = pesosW
-              
+            
             #calculo dos valores e ativação
             Z_in = np.dot(X,v)
 
@@ -169,9 +169,9 @@ def MLP(dados,taxaDeAprendizado,epocas,erroMaximo,nroNeuronios, pesosV, pesosW):
             v += deltaV
         
         #TESTE VALIDACAO
-        for i in range(dados.shape[0]):     # loop de teste do fold de teste atual
-            X = dados[i][3]
-            T = dados[i][0]
+        for i in range(dadosTeste.shape[0]):     # loop de teste do fold de teste atual
+            X = dadosTeste[i][3]
+            T = dadosTeste[i][0]
             Z_in = np.dot(X,pesosV)
             Z = sigmoid(Z_in)
             Y_in = np.dot(Z,pesosW)
@@ -181,23 +181,17 @@ def MLP(dados,taxaDeAprendizado,epocas,erroMaximo,nroNeuronios, pesosV, pesosW):
         erroValidacao = np.asarray(erroValidacao)
 
         erroTreinoEpoca = erroQuadratico(erroTreinamento)
-        print(erroTreinoEpoca)
         erroValidacaoEpoca = erroQuadratico(erroValidacao)
-        print(erroValidacaoEpoca)
 
         todosErrosEpocas.append(erroTreinoEpoca)
         todosErrosValidacao.append(erroValidacaoEpoca)
         
         #shuffle(dados) # embaralha a ordem dos arquivos de treinamento e teste ao mesmo tempo
-    
+
     todosErrosEpocas = np.asarray(todosErrosEpocas)
     todosErrosValidacao = np.asarray(todosErrosValidacao)
-    plt.plot(todosErrosEpocas)
-    plt.plot(todosErrosValidacao)
-    plt.savefig('erros.png')
-    plt.close()
      
-    return Y, v, w, erroTreinamento
+    return Y, v, w, todosErrosEpocas, todosErrosValidacao
 
 def testaMLP(entrada, pesosV, pesosW):
     if len(entrada.shape) == 1:
@@ -369,6 +363,7 @@ def main(argv):
     caminhoEntrada = "/home/arthur/SI/IA/EP/dataset1/treinamento/" # pasta selecionada pelo usuario
     #/IA/dataset1/HOG1
     #/home/arthur/SI/IA/EP/dataset1/treinamento/
+    #C:\\Users\\MICRO 3\\Desktop\\arthur\\dataset1\\treinamento
     
     try:
         caminhoEntrada = os.path.join(caminhoEntrada, extrator)
@@ -440,7 +435,7 @@ def main(argv):
 
     config.close()
 
-    matrizConfusao = np.zeros((26,26))
+    #matrizConfusao = np.zeros((26,26))
 
     try:
         arquivosPasta = os.listdir(caminhoEntrada)
@@ -500,58 +495,154 @@ def main(argv):
     
     return
     '''
+
+    np.set_printoptions(threshold = np.nan)
+
+    logTeste = open('testePrints.txt', 'w')
+
+    # logTeste.write("matrixTodasImagens" + '     len = ' + str(len(matrixTodasImagens)) + '     shape = ' + str(matrixTodasImagens.shape) + "\n")
+    # logTeste.write(str(matrixTodasImagens) + '\n\n')
+
+    # logTeste.write("matrixTodasImagens[0]" + '     len = ' + str(len(matrixTodasImagens[0])) + '     shape = ' + str(matrixTodasImagens[0].shape) + "\n")
+    # logTeste.write(str(matrixTodasImagens[0]) + '\n\n')
+
+    # logTeste.write("matrixTodasImagens[0][0]" + '     len = ' + str(len(matrixTodasImagens[0][0])) + '     shape = ' + str(matrixTodasImagens[0][0].shape) + "\n")
+    # logTeste.write(str(matrixTodasImagens[0][0]) + '\n\n')
+    # logTeste.write("matrixTodasImagens[0][1]" + '     len = ' + str(len(matrixTodasImagens[0][1])) + '     shape = Não tem shape!\n')
+    # logTeste.write(str(matrixTodasImagens[0][1]) + '\n\n')
+    # logTeste.write("matrixTodasImagens[0][2]" + '     len = Não tem len!     shape = Não tem shape!\n')
+    # logTeste.write(str(matrixTodasImagens[0][2]) + '\n\n')
+    # logTeste.write("matrixTodasImagens[0][3]" + '     len = ' + str(len(matrixTodasImagens[0][3])) + '     shape = ' + str(matrixTodasImagens[0][3].shape) + "\n")
+    # logTeste.write(str(matrixTodasImagens[0][3]) + '\n\n')
+
+    # logTeste.write("matrixTodasImagens[2999]" + '     len = ' + str(len(matrixTodasImagens[2999])) + '     shape = ' + str(matrixTodasImagens[2999].shape) + "\n")
+    # logTeste.write(str(matrixTodasImagens[2999]) + '\n\n')
+
+    # logTeste.write("\n\n\n")
+
+    # logTeste.write("matrixTodasImagens[0:1000]" + '     len = ' + str(len(matrixTodasImagens[0:1000])) + '     shape = ' + str(matrixTodasImagens[0:1000].shape) + "\n\n")
+
+    # for i in range(matrixTodasImagens[0:1000].shape[0]):
+    #     logTeste.write(str(matrixTodasImagens[0:1000][i][1]) + '\n')
+
+    # logTeste.write("\n\n\n")
+
+    # logTeste.write("matrixTodasImagens[1000:2000]" + '     len = ' + str(len(matrixTodasImagens[1000:2000])) + '     shape = ' + str(matrixTodasImagens[1000:2000].shape) + "\n\n")
+
+    # for i in range(matrixTodasImagens[1000:2000].shape[0]):
+    #     logTeste.write(str(matrixTodasImagens[1000:2000][i][1]) + '\n')
+
+    # logTeste.write("\n\n\n")
+
+    # logTeste.write("matrixTodasImagens[2000:3000]" + '     len = ' + str(len(matrixTodasImagens[2000:3000])) + '     shape = ' + str(matrixTodasImagens[2000:3000].shape) + "\n\n")
+
+    # for i in range(matrixTodasImagens[2000:3000].shape[0]):
+    #     logTeste.write(str(matrixTodasImagens[2000:3000][i][1]) + '\n')
+
+    # logTeste.write("\n\n\n")
+
+
     listaS = matrixTodasImagens[0:1000]
     listaX = matrixTodasImagens[1000:2000]
     listaZ = matrixTodasImagens[2000:3000]
+    
+    fold1 = np.vstack((listaS[0:200], listaX[0:200], listaZ[0:200]))
+    fold2 = np.vstack((listaS[200:400], listaX[200:400], listaZ[200:400]))
+    fold3 = np.vstack((listaS[400:600], listaX[400:600], listaZ[400:600]))
+    fold4 = np.vstack((listaS[600:800], listaX[600:800], listaZ[600:800]))
+    fold5 = np.vstack((listaS[800:1000], listaX[800:1000], listaZ[800:1000]))
 
-    fold1 = listaS[0:200] + listaX[0:200] + listaZ[0:200]
-    fold2 = listaS[200:400] + listaX[200:400] + listaZ[200:400]
-    fold3 = listaS[400:600] + listaX[400:600] + listaZ[400:600]
-    fold4 = listaS[600:800] + listaX[600:800] + listaZ[600:800]
-    fold5 = listaS[800:1000] + listaX[800:1000] + listaZ[800:1000]
+    # logTeste.write("fold1" + '     len = ' + str(len(fold1)) + '     shape = ' + str(fold1.shape) + "\n")
+    # logTeste.write("fold2" + '     len = ' + str(len(fold2)) + '     shape = ' + str(fold2.shape) + "\n")
+    # logTeste.write("fold3" + '     len = ' + str(len(fold3)) + '     shape = ' + str(fold3.shape) + "\n")
+    # logTeste.write("fold4" + '     len = ' + str(len(fold4)) + '     shape = ' + str(fold4.shape) + "\n")
+    # logTeste.write("fold5" + '     len = ' + str(len(fold5)) + '     shape = ' + str(fold5.shape) + "\n\n")
+
+    # logTeste.write("fold1:\n")
+    # for i in range(fold1.shape[0]):
+    #     logTeste.write(str(fold1[i][1]) + '\n')
+
+    # logTeste.write("fold2:\n")
+    # for i in range(fold2.shape[0]):
+    #     logTeste.write(str(fold2[i][1]) + '\n')
+
+    # logTeste.write("fold3:\n")
+    # for i in range(fold3.shape[0]):
+    #     logTeste.write(str(fold3[i][1]) + '\n')
+
+    # logTeste.write("fold4:\n")
+    # for i in range(fold4.shape[0]):
+    #     logTeste.write(str(fold4[i][1]) + '\n')
+
+    # logTeste.write("fold5:\n")
+    # for i in range(fold5.shape[0]):
+    #     logTeste.write(str(fold5[i][1]) + '\n')
+
+    # logTeste.write("\n\n\n")
 
     listaFolds = [fold1, fold2, fold3, fold4, fold5]
-    #MLP (entrada,taxaDeAprendizado,epocas,erroMaximo,nroNeuronios,target,pesosV=None,pesosW=None)
     
-    np.set_printoptions(threshold = np.nan)
-    
-    #matrixTodasImagens = np.transpose(matrixTodasImagens)
-    #matrixMetaImagens = np.transpose(matrixMetaImagens)
+    # logTeste.write("listaFolds" + '     len = ' + str(len(listaFolds)) + '     shape = Não tem shape!\n')
 
-    print("matrixTodasImagens: shape = " + str(matrixTodasImagens.shape) + "\t len = " + str(len(matrixTodasImagens)) + "\t type = " + str(type(matrixTodasImagens)))
-    print("matrixTodasImagens[0][0]: shape = " + str(matrixTodasImagens[0][0].shape) + "\t len = " + str(len(matrixTodasImagens[0][0])) + "\t type = " + str(type(matrixTodasImagens[0][0])))
-    print("matrixTodasImagens[0][1]: shape = nao tem shape! \t len = " + str(len(matrixTodasImagens[0][1])) + "\t type = " + str(type(matrixTodasImagens[0][1])))
-    print("matrixTodasImagens[0][2]: shape = nao tem shape! \t len = nao tem len! \t type = " + str(type(matrixTodasImagens[0][2])))
-    print("matrixTodasImagens[0][3]: shape = " + str(matrixTodasImagens[0][3].shape) + "\t len = " + str(len(matrixTodasImagens[0][3])) + "\t type = " + str(type(matrixTodasImagens[0][3])))
-    print("")
+    # logTeste.write("listaFolds[0]" + '     len = ' + str(len(listaFolds[0])) + '     shape = ' + str(listaFolds[0].shape) + '\n')
+    # logTeste.write("listaFolds[1]" + '     len = ' + str(len(listaFolds[1])) + '     shape = ' + str(listaFolds[1].shape) + '\n')
+    # logTeste.write("listaFolds[2]" + '     len = ' + str(len(listaFolds[2])) + '     shape = ' + str(listaFolds[2].shape) + '\n')
+    # logTeste.write("listaFolds[3]" + '     len = ' + str(len(listaFolds[3])) + '     shape = ' + str(listaFolds[3].shape) + '\n')
+    # logTeste.write("listaFolds[4]" + '     len = ' + str(len(listaFolds[4])) + '     shape = ' + str(listaFolds[4].shape) + '\n')
+
+    # logTeste.write("\n\n\n")
+
+    # for fold in range(len(listaFolds)):
+    #     for i in range(listaFolds[fold].shape[0]):
+    #         logTeste.write('[' + str(i) + '] ==> ' + str(listaFolds[fold][i][1]) + '\n')
+    #     logTeste.write('\n\n')
+
+    # for i in range(listaFolds[0].shape[0]):
+    #     logTeste.write('[' + str(i) + '] ==> ' + str(listaFolds[0][i][1]) + ' '
+    #                                         + str(listaFolds[1][i][1]) + ' '
+    #                                         + str(listaFolds[2][i][1]) + ' '
+    #                                         + str(listaFolds[3][i][1]) + ' '
+    #                                         + str(listaFolds[4][i][1]) + ' ' + '\n')
 
     vInicial = criaMatrizPesosDefault(matrixTodasImagens[0][3].shape[1],nroNeuronios)
     wInicial = criaMatrizPesosDefault(nroNeuronios,matrixTodasImagens[0][0].shape[0])
     
     #folds
-    for i in range(5):
+    for i in range(len(listaFolds)):
+        logTeste.write('i = ' + str(i) + '\n')
         teste = listaFolds[i]
-        treinamento = []
-        for j in range(5):
+        treinamento = np.zeros((0, 4))
+        for j in range(len(listaFolds)):
             if(j != i):
-                treinamento = treinamento + listaFolds[j]
+                logTeste.write('   j = ' + str(j) + '\n')
+                treinamento = np.vstack((treinamento, listaFolds[j]))
 
-            somaTotalErro = 0    
+        logTeste.write("teste" + '     len = ' + str(len(teste)) + '     shape = ' + str(teste.shape) + '\n')
+        logTeste.write("treinamento" + '     len = ' + str(len(treinamento)) + '     shape = ' + str(teste.shape) + '\n')
 
-            saida, pesosV, pesosW, erroTreinamento = MLP(matrixTodasImagens,alfa,epocas,erroMaximo,nroNeuronios, vInicial, wInicial)
+        logTeste.write("treinamento[0]" + '     len = ' + str(len(treinamento[0])) + '     shape = ' + str(treinamento[0].shape) + "\n")
+        logTeste.write(str(treinamento[0]) + '\n\n')
+        logTeste.write("treinamento[599]" + '     len = ' + str(len(treinamento[599])) + '     shape = ' + str(treinamento[599].shape) + "\n")
+        logTeste.write(str(treinamento[599]) + '\n\n')
+        logTeste.write("treinamento[600]" + '     len = ' + str(len(treinamento[600])) + '     shape = ' + str(treinamento[600].shape) + "\n")
+        logTeste.write(str(treinamento[600]) + '\n\n')
+        logTeste.write("treinamento[2399]" + '     len = ' + str(len(treinamento[2399])) + '     shape = ' + str(treinamento[2399].shape) + "\n")
+        logTeste.write(str(treinamento[2399]) + '\n\n')
 
-            somaTotalErro = somaTotalErro + erroTreinamento
-            '''
-            saidaArredondada = []
-            for aux in range(saida.size):
-                saidaArredondada.append(round(saida[0][aux], 0))
-            try:
-                letraFinal = str(dic2[tuple(saidaArredondada)])
-            except KeyError:
-                letraFinal = None
-            '''
-        erroFinal = somaTotalErro / len(treinamento)
-        erro.write(str(i) + ";" + str(erroFinal))
+        saida, pesosV, pesosW, errosTreino, errosValidacao = MLP(treinamento,teste,alfa,epocas,erroMaximo,nroNeuronios, vInicial, wInicial)
+
+        plt.plot(errosTreino)
+        plt.plot(errosValidacao)
+        plt.title('Rodada ' + str(i))
+        plt.ylabel('Erro')
+        plt.xlabel('Epoca')
+        nomePlot = 'erros_rodada' + str(i) + '.png'
+        plt.savefig(os.path.join(caminhoSaida, nomePlot))
+        plt.close()
+
+        for k in range(len(errosTreino)-1):
+            erro.write(str(k) + ';' + str(errosTreino[k]) + ';' + str(errosValidacao[k]) + '\n')
+        erro.write(str(k+1) + ';' + str(errosTreino[len(errosTreino)-1]) + ';' + str(errosValidacao[len(errosTreino)-1]) + '\n\n')
 
         somaTotalErroTeste = 0
         for arquivo in teste:       # loop de teste dos folds
