@@ -104,7 +104,10 @@ def erroQuadratico(erros):
 def criaMatrizPesosDefault(linhas,colunas):
     return np.random.random((linhas,colunas)) - 1
 
-def MLP(dadosTreinamento, dadosTeste,taxaDeAprendizado,epocas,erroMaximo,nroNeuronios, pesosV, pesosW):
+def modificaTaxaAprendizado(taxaAprendizado):
+    return (6*taxaAprendizado)/7 
+
+def MLP(dadosTreinamento,dadosTeste,taxaDeAprendizado,epocas,erroMaximo,nroNeuronios,pesosV,pesosW):
     
     todosErrosEpocas = []
     todosErrosValidacao = []
@@ -114,7 +117,8 @@ def MLP(dadosTreinamento, dadosTeste,taxaDeAprendizado,epocas,erroMaximo,nroNeur
         erroTreinamento = np.zeros((0,26))
         erroValidacao = np.zeros((0,26))
 
-        #VERIFICAR SE FUNCIONAM ESSES SHAPES!!!!!!!!!!!!!!!!
+        modificaTaxaAprendizado(taxaDeAprendizado)
+
         for i in range(dadosTreinamento.shape[0]):     # loop de treinamento dos folds atuais
             
             X = dadosTreinamento[i][3]
@@ -185,13 +189,25 @@ def MLP(dadosTreinamento, dadosTeste,taxaDeAprendizado,epocas,erroMaximo,nroNeur
 
         todosErrosEpocas.append(erroTreinoEpoca)
         todosErrosValidacao.append(erroValidacaoEpoca)
+
+        if epoca > 0:
+            if todosErrosValidacao[epoca] > todosErrosValidacao[epoca-1]:
+                print("SAIU PORQUE ERRO DE VALIDAÇÃO AUMENTOU")
+                print(todosErrosValidacao[epoca])
+                print(todosErrosValidacao[epoca-1])
+
+                todosErrosEpocas = np.asarray(todosErrosEpocas)
+                todosErrosValidacao = np.asarray(todosErrosValidacao)
+                 
+                return v, w, todosErrosEpocas, todosErrosValidacao
         
-        #shuffle(dados) # embaralha a ordem dos arquivos de treinamento e teste ao mesmo tempo
+        np.random.shuffle(dadosTreinamento) # embaralha a ordem dos folds de treinamento
+        np.random.shuffle(dadosTeste) # embaralha a ordem dos fold de treino
 
     todosErrosEpocas = np.asarray(todosErrosEpocas)
     todosErrosValidacao = np.asarray(todosErrosValidacao)
      
-    return Y, v, w, todosErrosEpocas, todosErrosValidacao
+    return v, w, todosErrosEpocas, todosErrosValidacao
 
 def testaMLP(entrada, pesosV, pesosW):
     if len(entrada.shape) == 1:
@@ -326,19 +342,47 @@ def somaColuna(matrizBase, vetorSoma, col):
 
     return matrizBase
 
+def corte(a,inicio,final):
+    
+    b = a[:, inicio:final ]
+    
+    c = b.flatten()
+    
+    return c
+
+def organizarFolds(matrizTodasImagens, numLetras, numFolds, numImagens):
+    imagensPorLetra = numImagens / numLetras 
+    imagensPorFold = numImagens / numFolds
+    letrasPorFold = imagensPorFold / numLetras
+
+    listaLetras = np.zeros((numLetras,imagensPorLetra), dtype='object')
+
+    for i in range(listaLetras.shape[0]): #letras
+        for j in range(listaLetras.shape[1]): #imagem em letras
+            listaLetras[i][j] = matrizTodasImagens[i * imagensPorLetra + j]
+
+    folds = np.zeros((numFolds,imagensPorFold), dtype='object')
+
+    for k in range(numFolds):
+        folds[k] = corte(listaLetras , letrasPorFold * k , letrasPorFold * (k+1) )
+
+    return folds
+
+
 def main(argv):
 
-    if(len(argv) != 6):
+    if(len(argv) < 7):
         print("Numero errado de argumentos!")
         print("Usagem do rede_final.py:")
-        print("argumento-01: Pasta com a entrada da rede, deve comecar por 'HOG' ou 'LBP' (sem aspas)")
-        print("argumento-02: Alfa (taxa de aprendizado) a ser usado na rede")
-        print("argumento-03: Numero de epocas que sera usado no MLP")
-        print("argumento-04: Erro maximo da rede MLP")
-        print("argumento-05: Numero de neuronios da camada escondida da rede MLP")
+        print("argumento-01: Dataset utilizado (número 1 ou 2)")
+        print("argumento-02: Pasta com a entrada da rede, deve comecar por 'HOG' ou 'LBP' (sem aspas)")
+        print("argumento-03: Alfa (taxa de aprendizado) a ser usado na rede")
+        print("argumento-04: Numero de epocas que sera usado no MLP")
+        print("argumento-05: Erro maximo da rede MLP")
+        print("argumento-06: Numero de neuronios da camada escondida da rede MLP")
         return
 
-    if not(argv[1].startswith("HOG", 0, 3) or argv[1].startswith("LBP", 0, 3)):
+    if not(argv[2].startswith("HOG", 0, 3) or argv[1].startswith("LBP", 0, 3)):
         print("Extrator desconhecido!")
         print("O argumento-01 deve ser o nome da pasta com a entrada e deve comecar por 'HOG' ou 'LBP' (sem aspas), por exemplo: 'HOG', 'HOG1', 'HOG2', ...")
         return
@@ -354,20 +398,31 @@ def main(argv):
     global dic1
     global dic2
     
-    extrator = str(argv[1])
-    alfa = float(argv[2])
-    epocas = int(argv[3])
-    erroMaximo = float(argv[4])
-    nroNeuronios = int(argv[5])
+    escolhaDataset = int(argv[1])
+    extrator = str(argv[2])
+    alfa = float(argv[3])
+    epocas = int(argv[4])
+    erroMaximo = float(argv[5])
+    nroNeuronios = int(argv[6])
 
-    caminhoEntrada = "/home/arthur/SI/IA/EP/dataset1/treinamento/" # pasta selecionada pelo usuario
-    #/IA/dataset1/HOG1
-    #/home/arthur/SI/IA/EP/dataset1/treinamento/
-    #C:\\Users\\MICRO 3\\Desktop\\arthur\\dataset1\\treinamento
+    pastaBase = "/home/arthur/SI/IA/EP/" # pasta selecionada pelo usuario
+    #pastaBase = "../../dataset1/" 
+    #pastaBase = "/IA/dataset1/HOG1"
+    #pastaBase = "/home/arthur/SI/IA/EP/dataset1/treinamento/"
+    #pastaBase = "C:\\Users\\MICRO 2\\Desktop\\arthur\\dataset1\\treinamento"
+    #pastaBase = "C:\\Users\\MICRO 3\\Desktop\\arthur\\dataset1\\treinamento"
     
+    if escolhaDataset == 1:
+        pastaBase = os.path.join(pastaBase, "dataset1")
+    elif escolhaDataset == 2:
+        pastaBase = os.path.join(pastaBase, "dataset2")
+    else:
+        print("Dataset escolhido invalido! Deve ser o número 1 ou 2.")
+        return
+
     try:
-        caminhoEntrada = os.path.join(caminhoEntrada, extrator)
-        arqExtrator = open(os.path.join(caminhoEntrada, "configExtrator.dat"), "rb")
+        caminhoEntradaTreino = os.path.join(pastaBase, "treinamento", extrator)
+        arqExtrator = open(os.path.join(caminhoEntradaTreino, "configExtrator.dat"), "rb")
     except IOError as err:
         print("Erro no acesso a pasta com as imagens de entrada: ",err)
         return
@@ -389,7 +444,6 @@ def main(argv):
     try:
         config = open(os.path.join(caminhoSaida,"config.txt"), "w")
         erro = open(os.path.join(caminhoSaida,"erro.txt"), "w")
-        model = open(os.path.join(caminhoSaida,"model.dat"), "wb")
     except IOError as err:
         print("Erro na escrita dos arquivos de saida", err)
         return
@@ -438,7 +492,7 @@ def main(argv):
     #matrizConfusao = np.zeros((26,26))
 
     try:
-        arquivosPasta = os.listdir(caminhoEntrada)
+        arquivosPasta = os.listdir(caminhoEntradaTreino)
     except OSError as err:
         print("Erro ao listar arquivos da pasta de entrada: ",err)
         return
@@ -455,7 +509,7 @@ def main(argv):
     
     for arquivo in ordenados: 
 
-        entrada = np.loadtxt(os.path.join(caminhoEntrada, arquivo), dtype='float', delimiter="\n")
+        entrada = np.loadtxt(os.path.join(caminhoEntradaTreino, arquivo), dtype='float', delimiter="\n")
         entrada = np.append(entrada, [1.])
         if len(entrada.shape) == 1:
             entrada.shape = (entrada.shape[0], 1)
@@ -541,16 +595,96 @@ def main(argv):
 
     # logTeste.write("\n\n\n")
 
+    if escolhaDataset == 1:
 
-    listaS = matrixTodasImagens[0:1000]
-    listaX = matrixTodasImagens[1000:2000]
-    listaZ = matrixTodasImagens[2000:3000]
+        listaS = matrixTodasImagens[0:1000]
+        listaX = matrixTodasImagens[1000:2000]
+        listaZ = matrixTodasImagens[2000:3000]
+        
+        fold1 = np.vstack((listaS[0:200], listaX[0:200], listaZ[0:200]))
+        fold2 = np.vstack((listaS[200:400], listaX[200:400], listaZ[200:400]))
+        fold3 = np.vstack((listaS[400:600], listaX[400:600], listaZ[400:600]))
+        fold4 = np.vstack((listaS[600:800], listaX[600:800], listaZ[600:800]))
+        fold5 = np.vstack((listaS[800:1000], listaX[800:1000], listaZ[800:1000]))
+
+    elif escolhaDataset == 2:
+        listaA = matrixTodasImagens[0:1000]
+        listaB = matrixTodasImagens[1000:2000]
+        listaC = matrixTodasImagens[2000:3000]
+        listaD = matrixTodasImagens[3000:4000]
+        listaE = matrixTodasImagens[4000:5000]
+        listaF = matrixTodasImagens[5000:6000]
+        listaG = matrixTodasImagens[6000:7000]
+        listaH = matrixTodasImagens[7000:8000]
+        listaI = matrixTodasImagens[8000:9000]
+        listaJ = matrixTodasImagens[9000:10000]
+        listaK = matrixTodasImagens[10000:11000]
+        listaL = matrixTodasImagens[11000:12000]
+        listaM = matrixTodasImagens[12000:13000]
+        listaN = matrixTodasImagens[13000:14000]
+        listaO = matrixTodasImagens[14000:15000]
+        listaP = matrixTodasImagens[15000:16000]
+        listaQ = matrixTodasImagens[16000:17000]
+        listaR = matrixTodasImagens[17000:18000]
+        listaS = matrixTodasImagens[18000:19000]
+        listaT = matrixTodasImagens[19000:20000]
+        listaU = matrixTodasImagens[20000:21000]
+        listaV = matrixTodasImagens[21000:22000]
+        listaW = matrixTodasImagens[22000:23000]
+        listaX = matrixTodasImagens[23000:24000]
+        listaY = matrixTodasImagens[24000:25000]
+        listaZ = matrixTodasImagens[25000:26000]
+        
+        fold1 = np.vstack((listaA[0:200], listaB[0:200], listaC[0:200], listaD[0:200],
+                           listaE[0:200], listaF[0:200], listaG[0:200], listaH[0:200],
+                           listaI[0:200], listaJ[0:200], listaK[0:200], listaL[0:200],
+                           listaM[0:200], listaN[0:200], listaO[0:200], listaP[0:200],
+                           listaQ[0:200], listaR[0:200], listaS[0:200], listaT[0:200],
+                           listaU[0:200], listaV[0:200], listaW[0:200], listaX[0:200],
+                           listaY[0:200], listaZ[0:200]))
+        fold2 = np.vstack((listaA[200:400], listaB[200:400], listaC[200:400], listaD[200:400],
+                           listaE[200:400], listaF[200:400], listaG[200:400], listaH[200:400],
+                           listaI[200:400], listaJ[200:400], listaK[200:400], listaL[200:400],
+                           listaM[200:400], listaN[200:400], listaO[200:400], listaP[200:400],
+                           listaQ[200:400], listaR[200:400], listaS[200:400], listaT[200:400],
+                           listaU[200:400], listaV[200:400], listaW[200:400], listaX[200:400],
+                           listaY[200:400], listaZ[200:400]))
+        fold3 = np.vstack((listaA[400:600], listaB[400:600], listaC[400:600], listaD[400:600],
+                           listaE[400:600], listaF[400:600], listaG[400:600], listaH[400:600],
+                           listaI[400:600], listaJ[400:600], listaK[400:600], listaL[400:600],
+                           listaM[400:600], listaN[400:600], listaO[400:600], listaP[400:600],
+                           listaQ[400:600], listaR[400:600], listaS[400:600], listaT[400:600],
+                           listaU[400:600], listaV[400:600], listaW[400:600], listaX[400:600],
+                           listaY[400:600], listaZ[400:600]))
+        fold4 = np.vstack((listaA[600:800], listaB[600:800], listaC[600:800], listaD[600:800],
+                           listaE[600:800], listaF[600:800], listaG[600:800], listaH[600:800],
+                           listaI[600:800], listaJ[600:800], listaK[600:800], listaL[600:800],
+                           listaM[600:800], listaN[600:800], listaO[600:800], listaP[600:800],
+                           listaQ[600:800], listaR[600:800], listaS[600:800], listaT[600:800],
+                           listaU[600:800], listaV[600:800], listaW[600:800], listaX[600:800],
+                           listaY[600:800], listaZ[600:800]))
+        fold5 = np.vstack((listaA[800:1000], listaB[800:1000], listaC[800:1000], listaD[800:1000],
+                           listaE[800:1000], listaF[800:1000], listaG[800:1000], listaH[800:1000],
+                           listaI[800:1000], listaJ[800:1000], listaK[800:1000], listaL[800:1000],
+                           listaM[800:1000], listaN[800:1000], listaO[800:1000], listaP[800:1000],
+                           listaQ[800:1000], listaR[800:1000], listaS[800:1000], listaT[800:1000],
+                           listaU[800:1000], listaV[800:1000], listaW[800:1000], listaX[800:1000],
+                           listaY[800:1000], listaZ[800:1000]))
     
-    fold1 = np.vstack((listaS[0:200], listaX[0:200], listaZ[0:200]))
-    fold2 = np.vstack((listaS[200:400], listaX[200:400], listaZ[200:400]))
-    fold3 = np.vstack((listaS[400:600], listaX[400:600], listaZ[400:600]))
-    fold4 = np.vstack((listaS[600:800], listaX[600:800], listaZ[600:800]))
-    fold5 = np.vstack((listaS[800:1000], listaX[800:1000], listaZ[800:1000]))
+    listaFolds = [fold1, fold2, fold3, fold4, fold5]
+    #listaFolds = organizarFolds(matrixTodasImagens, 3, 5, len(arquivosImagem))
+    logTeste.write("listaFolds" + '     len = ' + str(len(listaFolds)) + '     shape = Não tem shape!\n')
+    logTeste.write("listaFolds[0]" + '     len = ' + str(len(listaFolds[0])) + '     shape = ' + str(listaFolds[0].shape) + '\n')
+    logTeste.write("listaFolds[1]" + '     len = ' + str(len(listaFolds[1])) + '     shape = ' + str(listaFolds[1].shape) + '\n')
+    logTeste.write("listaFolds[2]" + '     len = ' + str(len(listaFolds[2])) + '     shape = ' + str(listaFolds[2].shape) + '\n')
+    logTeste.write("listaFolds[3]" + '     len = ' + str(len(listaFolds[3])) + '     shape = ' + str(listaFolds[3].shape) + '\n')
+    logTeste.write("listaFolds[4]" + '     len = ' + str(len(listaFolds[4])) + '     shape = ' + str(listaFolds[4].shape) + '\n')
+
+    logTeste.write("listaFolds[0][0]" + '     len = ' + str(len(listaFolds[0][0])) + '     shape = ' + str(listaFolds[0][0].shape) + '\n')
+    logTeste.write("listaFolds[0][0][1]" + '     len = ' + str(len(listaFolds[0][0][1])) + '     shape = Não tem shape!\n')
+    logTeste.write(listaFolds[0][0][1] + '\n')
+    logTeste.write("listaFolds[0][0][2]" + '     len = Não tem len!     shape = Não tem shape!\n')
+    logTeste.write(str(listaFolds[0][0][2]) + '\n')
 
     # logTeste.write("fold1" + '     len = ' + str(len(fold1)) + '     shape = ' + str(fold1.shape) + "\n")
     # logTeste.write("fold2" + '     len = ' + str(len(fold2)) + '     shape = ' + str(fold2.shape) + "\n")
@@ -580,9 +714,6 @@ def main(argv):
 
     # logTeste.write("\n\n\n")
 
-    listaFolds = [fold1, fold2, fold3, fold4, fold5]
-    
-    # logTeste.write("listaFolds" + '     len = ' + str(len(listaFolds)) + '     shape = Não tem shape!\n')
 
     # logTeste.write("listaFolds[0]" + '     len = ' + str(len(listaFolds[0])) + '     shape = ' + str(listaFolds[0].shape) + '\n')
     # logTeste.write("listaFolds[1]" + '     len = ' + str(len(listaFolds[1])) + '     shape = ' + str(listaFolds[1].shape) + '\n')
@@ -604,6 +735,7 @@ def main(argv):
     #                                         + str(listaFolds[3][i][1]) + ' '
     #                                         + str(listaFolds[4][i][1]) + ' ' + '\n')
 
+
     vInicial = criaMatrizPesosDefault(matrixTodasImagens[0][3].shape[1],nroNeuronios)
     wInicial = criaMatrizPesosDefault(nroNeuronios,matrixTodasImagens[0][0].shape[0])
     
@@ -617,19 +749,42 @@ def main(argv):
                 logTeste.write('   j = ' + str(j) + '\n')
                 treinamento = np.vstack((treinamento, listaFolds[j]))
 
-        logTeste.write("teste" + '     len = ' + str(len(teste)) + '     shape = ' + str(teste.shape) + '\n')
-        logTeste.write("treinamento" + '     len = ' + str(len(treinamento)) + '     shape = ' + str(teste.shape) + '\n')
+        # logTeste.write("teste" + '     len = ' + str(len(teste)) + '     shape = ' + str(teste.shape) + '\n')
+        # logTeste.write("treinamento" + '     len = ' + str(len(treinamento)) + '     shape = ' + str(teste.shape) + '\n')
 
-        logTeste.write("treinamento[0]" + '     len = ' + str(len(treinamento[0])) + '     shape = ' + str(treinamento[0].shape) + "\n")
-        logTeste.write(str(treinamento[0]) + '\n\n')
-        logTeste.write("treinamento[599]" + '     len = ' + str(len(treinamento[599])) + '     shape = ' + str(treinamento[599].shape) + "\n")
-        logTeste.write(str(treinamento[599]) + '\n\n')
-        logTeste.write("treinamento[600]" + '     len = ' + str(len(treinamento[600])) + '     shape = ' + str(treinamento[600].shape) + "\n")
-        logTeste.write(str(treinamento[600]) + '\n\n')
-        logTeste.write("treinamento[2399]" + '     len = ' + str(len(treinamento[2399])) + '     shape = ' + str(treinamento[2399].shape) + "\n")
-        logTeste.write(str(treinamento[2399]) + '\n\n')
+        # logTeste.write("treinamento[0]" + '     len = ' + str(len(treinamento[0])) + '     shape = ' + str(treinamento[0].shape) + "\n")
+        # logTeste.write(str(treinamento[0]) + '\n\n')
+        # logTeste.write("treinamento[599]" + '     len = ' + str(len(treinamento[599])) + '     shape = ' + str(treinamento[599].shape) + "\n")
+        # logTeste.write(str(treinamento[599]) + '\n\n')
+        # logTeste.write("treinamento[600]" + '     len = ' + str(len(treinamento[600])) + '     shape = ' + str(treinamento[600].shape) + "\n")
+        # logTeste.write(str(treinamento[600]) + '\n\n')
+        # logTeste.write("treinamento[2399]" + '     len = ' + str(len(treinamento[2399])) + '     shape = ' + str(treinamento[2399].shape) + "\n")
+        # logTeste.write(str(treinamento[2399]) + '\n\n')
 
-        saida, pesosV, pesosW, errosTreino, errosValidacao = MLP(treinamento,teste,alfa,epocas,erroMaximo,nroNeuronios, vInicial, wInicial)
+        # logTeste.write("\n\n\n")
+        logTeste.write("alfa" + '     len = Não tem len!     shape = Não tem shape!\n')
+        logTeste.write(str(alfa) + '\n\n')
+        logTeste.write("epocas" + '     len = Não tem len!     shape = Não tem shape!\n')
+        logTeste.write(str(epocas) + '\n\n')
+        logTeste.write("nroNeuronios" + '     len = Não tem len!     shape = Não tem shape!\n')
+        logTeste.write(str(nroNeuronios) + '\n\n')
+        logTeste.write("vInicial" + '     len = ' + str(len(vInicial)) + '     shape = ' + str(vInicial.shape) + "\n")
+        logTeste.write(str(vInicial) + '\n\n')
+        logTeste.write("wInicial" + '     len = ' + str(len(wInicial)) + '     shape = ' + str(wInicial.shape) + "\n")
+        logTeste.write(str(wInicial) + '\n\n')
+
+        vAux = np.copy(vInicial)
+        wAux = np.copy(wInicial)
+
+        pesosV, pesosW, errosTreino, errosValidacao = MLP(treinamento,teste,alfa,epocas,erroMaximo,nroNeuronios, vAux, wAux)
+
+        logTeste.write("\n\n\n")
+        logTeste.write("saida" + '     len = ' + str(len(saida)) + '     shape = ' + str(saida.shape) + "\n")
+        logTeste.write(str(saida) + '\n\n')
+        logTeste.write("pesosV" + '     len = ' + str(len(pesosV)) + '     shape = ' + str(pesosV.shape) + "\n")
+        logTeste.write(str(pesosV) + '\n\n')
+        logTeste.write("pesosW" + '     len = ' + str(len(pesosW)) + '     shape = ' + str(pesosW.shape) + "\n")
+        logTeste.write(str(pesosW) + '\n\n')
 
         plt.plot(errosTreino)
         plt.plot(errosValidacao)
@@ -644,31 +799,12 @@ def main(argv):
             erro.write(str(k) + ';' + str(errosTreino[k]) + ';' + str(errosValidacao[k]) + '\n')
         erro.write(str(k+1) + ';' + str(errosTreino[len(errosTreino)-1]) + ';' + str(errosValidacao[len(errosTreino)-1]) + '\n\n')
 
-        somaTotalErroTeste = 0
-        for arquivo in teste:       # loop de teste dos folds
-            entrada = np.loadtxt(os.path.join(caminhoEntrada, arquivo), dtype='float', delimiter="\n")
-            entrada = np.append(entrada, [1.])
-            entrada = np.transpose(entrada) # transpoe de uma matriz linha para uma matriz coluna
+        nomeModel = 'model' + str(i) + '.dat'
+        model = open(os.path.join(caminhoSaida,nomeModel), "wb")
+        data = (pesosV, pesosW)
+        pickle.dump(data, model)
+        model.close()
 
-            saidaTestada = testaMLP(entrada, pesosV, pesosW)
-            saidaEsperadaTeste, letraTeste, indiceTeste = geraSaidaEsperada(arquivo)
-
-            erroQuadraticoTeste = erroQuadratico(saidaTestada, saidaEsperadaTeste)
-            somaTotalErroTeste = somaTotalErroTeste + erroQuadraticoTeste
-
-            saidaArredondadaTeste = []
-            for aux in range(saida.size):
-                saidaArredondadaTeste.append(round(saidaTestada[0][aux], 0))
-
-            somaColuna(matrizConfusao, saidaArredondadaTeste, indiceTeste)
-        
-        erroFinalTeste = somaTotalErroTeste / len(teste)
-        erro.write(";" + str(erroFinalTeste) + "\n")
-
-    data = (pesosV, pesosW)
-    pickle.dump(data, model)
-
-    model.close()
     erro.close()
 
     ts = time.time()
