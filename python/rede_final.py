@@ -9,6 +9,8 @@ import pickle
 import sys
 import matplotlib.pyplot as plt
 
+plt.rcParams['savefig.dpi'] = 500
+
 '''
 41 = A
 42 = B
@@ -102,7 +104,7 @@ def erroQuadratico(erros):
     return np.sum(np.power(erros,2))/(2*len(erros))
 
 def criaMatrizPesosDefault(linhas,colunas):
-    return np.random.random((linhas,colunas)) - 1
+    return np.random.random((linhas,colunas))
 
 def modificaTaxaAprendizado(taxaAprendizado):
     return (6*taxaAprendizado)/7 
@@ -190,16 +192,16 @@ def MLP(dadosTreinamento,dadosTeste,taxaDeAprendizado,epocas,erroMaximo,nroNeuro
         todosErrosEpocas.append(erroTreinoEpoca)
         todosErrosValidacao.append(erroValidacaoEpoca)
 
-        if epoca > 0:
-            if todosErrosValidacao[epoca] > todosErrosValidacao[epoca-1]:
-                print("SAIU PORQUE ERRO DE VALIDAÇÃO AUMENTOU")
-                print(todosErrosValidacao[epoca])
-                print(todosErrosValidacao[epoca-1])
+        # if epoca > 0:
+        #     if todosErrosValidacao[epoca] > todosErrosValidacao[epoca-1]:
+        #         print("SAIU PORQUE ERRO DE VALIDAÇÃO AUMENTOU")
+        #         print(todosErrosValidacao[epoca])
+        #         print(todosErrosValidacao[epoca-1])
 
-                todosErrosEpocas = np.asarray(todosErrosEpocas)
-                todosErrosValidacao = np.asarray(todosErrosValidacao)
+        #         todosErrosEpocas = np.asarray(todosErrosEpocas)
+        #         todosErrosValidacao = np.asarray(todosErrosValidacao)
                  
-                return v, w, todosErrosEpocas, todosErrosValidacao
+        #         return v, w, todosErrosEpocas, todosErrosValidacao
         
         np.random.shuffle(dadosTreinamento) # embaralha a ordem dos folds de treinamento
         np.random.shuffle(dadosTeste) # embaralha a ordem dos fold de treino
@@ -408,9 +410,9 @@ def main(argv):
     pastaBase = "/home/arthur/SI/IA/EP/" # pasta selecionada pelo usuario
     #pastaBase = "../../dataset1/" 
     #pastaBase = "/IA/dataset1/HOG1"
-    #pastaBase = "/home/arthur/SI/IA/EP/dataset1/treinamento/"
-    #pastaBase = "C:\\Users\\MICRO 2\\Desktop\\arthur\\dataset1\\treinamento"
-    #pastaBase = "C:\\Users\\MICRO 3\\Desktop\\arthur\\dataset1\\treinamento"
+    #pastaBase = "/home/arthur/SI/IA/EP/"
+    #pastaBase = "C:\\Users\\MICRO 2\\Desktop\\arthur"
+    #pastaBase = "C:\\Users\\MICRO 3\\Desktop\\arthur"
     
     if escolhaDataset == 1:
         pastaBase = os.path.join(pastaBase, "dataset1")
@@ -489,8 +491,6 @@ def main(argv):
 
     config.close()
 
-    #matrizConfusao = np.zeros((26,26))
-
     try:
         arquivosPasta = os.listdir(caminhoEntradaTreino)
     except OSError as err:
@@ -506,22 +506,15 @@ def main(argv):
     ordenados = sorted(arquivosImagem)
 
     matrixTodasImagens = np.zeros((0,4))
-    
-    for arquivo in ordenados: 
 
+    for arquivo in ordenados: 
         entrada = np.loadtxt(os.path.join(caminhoEntradaTreino, arquivo), dtype='float', delimiter="\n")
         entrada = np.append(entrada, [1.])
         if len(entrada.shape) == 1:
             entrada.shape = (entrada.shape[0], 1)
         entrada = np.transpose(entrada) # transpoe de uma matriz linha para uma matriz coluna
-       
-        #if not 'matrixTodasImagens' in locals():
-            #matrixTodasImagens = np.zeros((0,4))
-
         saida,letra,indice = geraSaidaEsperada(arquivo)
-
         auxMeta = np.array([saida,letra,indice,entrada])
-        
         matrixTodasImagens = np.vstack([matrixTodasImagens,auxMeta])
 
     #imagensPorLetra = matrixTodasImagens.shape[0] / 26
@@ -551,7 +544,6 @@ def main(argv):
     '''
 
     np.set_printoptions(threshold = np.nan)
-
     logTeste = open('testePrints.txt', 'w')
 
     # logTeste.write("matrixTodasImagens" + '     len = ' + str(len(matrixTodasImagens)) + '     shape = ' + str(matrixTodasImagens.shape) + "\n")
@@ -672,19 +664,19 @@ def main(argv):
                            listaY[800:1000], listaZ[800:1000]))
     
     listaFolds = [fold1, fold2, fold3, fold4, fold5]
-    #listaFolds = organizarFolds(matrixTodasImagens, 3, 5, len(arquivosImagem))
-    logTeste.write("listaFolds" + '     len = ' + str(len(listaFolds)) + '     shape = Não tem shape!\n')
-    logTeste.write("listaFolds[0]" + '     len = ' + str(len(listaFolds[0])) + '     shape = ' + str(listaFolds[0].shape) + '\n')
-    logTeste.write("listaFolds[1]" + '     len = ' + str(len(listaFolds[1])) + '     shape = ' + str(listaFolds[1].shape) + '\n')
-    logTeste.write("listaFolds[2]" + '     len = ' + str(len(listaFolds[2])) + '     shape = ' + str(listaFolds[2].shape) + '\n')
-    logTeste.write("listaFolds[3]" + '     len = ' + str(len(listaFolds[3])) + '     shape = ' + str(listaFolds[3].shape) + '\n')
-    logTeste.write("listaFolds[4]" + '     len = ' + str(len(listaFolds[4])) + '     shape = ' + str(listaFolds[4].shape) + '\n')
+    # listaFolds = organizarFolds(matrixTodasImagens, 3, 5, len(arquivosImagem))
+    # logTeste.write("listaFolds" + '     len = ' + str(len(listaFolds)) + '     shape = Não tem shape!\n')
+    # logTeste.write("listaFolds[0]" + '     len = ' + str(len(listaFolds[0])) + '     shape = ' + str(listaFolds[0].shape) + '\n')
+    # logTeste.write("listaFolds[1]" + '     len = ' + str(len(listaFolds[1])) + '     shape = ' + str(listaFolds[1].shape) + '\n')
+    # logTeste.write("listaFolds[2]" + '     len = ' + str(len(listaFolds[2])) + '     shape = ' + str(listaFolds[2].shape) + '\n')
+    # logTeste.write("listaFolds[3]" + '     len = ' + str(len(listaFolds[3])) + '     shape = ' + str(listaFolds[3].shape) + '\n')
+    # logTeste.write("listaFolds[4]" + '     len = ' + str(len(listaFolds[4])) + '     shape = ' + str(listaFolds[4].shape) + '\n')
 
-    logTeste.write("listaFolds[0][0]" + '     len = ' + str(len(listaFolds[0][0])) + '     shape = ' + str(listaFolds[0][0].shape) + '\n')
-    logTeste.write("listaFolds[0][0][1]" + '     len = ' + str(len(listaFolds[0][0][1])) + '     shape = Não tem shape!\n')
-    logTeste.write(listaFolds[0][0][1] + '\n')
-    logTeste.write("listaFolds[0][0][2]" + '     len = Não tem len!     shape = Não tem shape!\n')
-    logTeste.write(str(listaFolds[0][0][2]) + '\n')
+    # logTeste.write("listaFolds[0][0]" + '     len = ' + str(len(listaFolds[0][0])) + '     shape = ' + str(listaFolds[0][0].shape) + '\n')
+    # logTeste.write("listaFolds[0][0][1]" + '     len = ' + str(len(listaFolds[0][0][1])) + '     shape = Não tem shape!\n')
+    # logTeste.write(listaFolds[0][0][1] + '\n')
+    # logTeste.write("listaFolds[0][0][2]" + '     len = Não tem len!     shape = Não tem shape!\n')
+    # logTeste.write(str(listaFolds[0][0][2]) + '\n')
 
     # logTeste.write("fold1" + '     len = ' + str(len(fold1)) + '     shape = ' + str(fold1.shape) + "\n")
     # logTeste.write("fold2" + '     len = ' + str(len(fold2)) + '     shape = ' + str(fold2.shape) + "\n")
@@ -736,18 +728,50 @@ def main(argv):
     #                                         + str(listaFolds[4][i][1]) + ' ' + '\n')
 
 
+    try:
+        caminhoEntradaTeste = os.path.join(pastaBase, "testes", extrator)
+    except IOError as err:
+        print("Erro no acesso a pasta com as imagens de teste da rede.\nDeve ter com o extrator dentro da pasta 'testes' da pasta do dataset com as imagens processadas!",err)
+        return
+
+    try:
+        arquivosPasta = os.listdir(caminhoEntradaTeste)
+    except OSError as err:
+        print("Erro ao listar arquivos da pasta de testes: ",err)
+        return
+
+    arquivosImagem = list(filter(lambda k: '.txt' in k, arquivosPasta))
+
+    if len(arquivosImagem) == 0:
+        print("Pasta selecionada nao contem imagens .txt!")
+        return
+    
+    ordenados = sorted(arquivosImagem)
+    
+    matrixImagensTeste = np.zeros((0,4))
+
+    for arquivo in ordenados: 
+        entradaTeste = np.loadtxt(os.path.join(caminhoEntradaTeste, arquivo), dtype='float', delimiter="\n")
+        entradaTeste = np.append(entradaTeste, [1.])
+        if len(entradaTeste.shape) == 1:
+            entradaTeste.shape = (entradaTeste.shape[0], 1)
+        entradaTeste = np.transpose(entradaTeste) # transpoe de uma matriz linha para uma matriz coluna
+        saida,letra,indice = geraSaidaEsperada(arquivo)
+        auxMeta = np.array([saida,letra,indice,entradaTeste])
+        matrixImagensTeste = np.vstack([matrixImagensTeste,auxMeta])
+
     vInicial = criaMatrizPesosDefault(matrixTodasImagens[0][3].shape[1],nroNeuronios)
     wInicial = criaMatrizPesosDefault(nroNeuronios,matrixTodasImagens[0][0].shape[0])
     
     #folds
     for i in range(len(listaFolds)):
         logTeste.write('i = ' + str(i) + '\n')
-        teste = listaFolds[i]
+        teste = np.copy(listaFolds[i])
         treinamento = np.zeros((0, 4))
         for j in range(len(listaFolds)):
             if(j != i):
                 logTeste.write('   j = ' + str(j) + '\n')
-                treinamento = np.vstack((treinamento, listaFolds[j]))
+                treinamento = np.vstack((treinamento, np.copy(listaFolds[j])))
 
         # logTeste.write("teste" + '     len = ' + str(len(teste)) + '     shape = ' + str(teste.shape) + '\n')
         # logTeste.write("treinamento" + '     len = ' + str(len(treinamento)) + '     shape = ' + str(teste.shape) + '\n')
@@ -786,12 +810,13 @@ def main(argv):
         logTeste.write("pesosW" + '     len = ' + str(len(pesosW)) + '     shape = ' + str(pesosW.shape) + "\n")
         logTeste.write(str(pesosW) + '\n\n')
 
-        plt.plot(errosTreino)
-        plt.plot(errosValidacao)
+        plt.plot(errosTreino, label='Erro de treinamento')
+        plt.plot(errosValidacao, label='Erro de validacao')
         plt.title('Rodada ' + str(i))
         plt.ylabel('Erro')
         plt.xlabel('Epoca')
         nomePlot = 'erros_rodada' + str(i) + '.png'
+        plt.legend()
         plt.savefig(os.path.join(caminhoSaida, nomePlot))
         plt.close()
 
@@ -804,6 +829,10 @@ def main(argv):
         data = (pesosV, pesosW)
         pickle.dump(data, model)
         model.close()
+
+        matrizConfusao = np.zeros((26,26))  # eixo x ==> resultado obtido / eixo y ==> resultado esperado
+
+
 
     erro.close()
 
