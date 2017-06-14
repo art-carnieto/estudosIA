@@ -227,6 +227,22 @@ def somaColuna(matrizBase, indiceSoma, col):
     matrizBase[indiceSoma][col] = matrizBase[indiceSoma][col] + 1
 
     return matrizBase
+    
+def acuracia(x):
+    
+    count = 0
+    total = 0
+    
+    
+    if(x.shape[0] == x.shape[1]):
+        for i in range(x.shape[0]):
+            count += x[i][i]
+            
+    for j in range(x.shape[0]):
+        for k in range(x.shape[1]):
+            total += x[j][k]
+    
+    return count / float(total)
 
 def main(argv):
 
@@ -334,7 +350,10 @@ def main(argv):
             # modificar aqui a matriz de confusao somando o valor obtido da saida nela
             col = matrixImagensTeste[entrada][2] # indice da matriz de confusao
             
-            matrizConfusao = somaColuna(matrizConfusao, indiceResp, col) 
+            matrizConfusao = somaColuna(matrizConfusao, indiceResp, col)
+            
+        print acuracia(matrizConfusao)
+            
 
         nomeTabela = "confusao" + str(i) + ".txt"
         tabela = open(os.path.join(pastaExecucoes,nomeTabela), "w")
