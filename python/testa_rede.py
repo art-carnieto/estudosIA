@@ -336,8 +336,6 @@ def main(argv):
             # nao sei se 0.6 ele arredonda para 1... tem que pesquisar
             # podemos modificar isso para um valor nosso, por exemplo: tudo abaixo de 0.7 vira 0 e acima ou igual vira 1
             
-            
-            
             indiceResp = np.argmax(saidaObtida)
             #saidaArredondada.append(max(saidaObtida[0][aux], 0))
             
