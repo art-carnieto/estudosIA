@@ -1,20 +1,319 @@
-HOG1: ../../dataset1/amostra/HOG1
-ppc = 16
-ori = 12
+HOG1: C:\Users\MICRO 3\Desktop\arthur\dataset2\treinamento\HOG1
+ppc = 64
+ori = 8
 cpb = 1
 
-HOG2: ../../dataset1/amostra/HOG2
-ppc = 16
-ori = 12
+HOG2: C:\Users\MICRO 3\Desktop\arthur\dataset2\testes\HOG2
+ppc = 32
+ori = 8
 cpb = 1
 
-HOG1: ../../dataset1/amostra/HOG1
+HOG2: C:\Users\MICRO 3\Desktop\arthur\dataset2\treinamento\HOG2
+ppc = 32
+ori = 8
+cpb = 1
+
+HOG3: C:\Users\MICRO 3\Desktop\arthur\dataset2\testes\HOG3
+ppc = 16
+ori = 8
+cpb = 1
+
+HOG3: C:\Users\MICRO 3\Desktop\arthur\dataset2\treinamento\HOG3
+ppc = 16
+ori = 8
+cpb = 1
+
+HOG4: C:\Users\MICRO 3\Desktop\arthur\dataset2\testes\HOG4
 ppc = 64
 ori = 10
 cpb = 1
 
-HOG1: ../../dataset1/amostra/HOG1
-ppc = 12
-ori = 9
+HOG4: C:\Users\MICRO 3\Desktop\arthur\dataset2\treinamento\HOG4
+ppc = 64
+ori = 10
 cpb = 1
+
+HOG5: C:\Users\MICRO 3\Desktop\arthur\dataset2\testes\HOG5
+ppc = 32
+ori = 10
+cpb = 1
+
+HOG5: C:\Users\MICRO 3\Desktop\arthur\dataset2\treinamento\HOG5
+ppc = 32
+ori = 10
+cpb = 1
+
+HOG6: C:\Users\MICRO 3\Desktop\arthur\dataset2\testes\HOG6
+ppc = 16
+ori = 10
+cpb = 1
+
+HOG6: C:\Users\MICRO 3\Desktop\arthur\dataset2\treinamento\HOG6
+ppc = 16
+ori = 10
+cpb = 1
+
+HOG7: C:\Users\MICRO 3\Desktop\arthur\dataset2\testes\HOG7
+ppc = 64
+ori = 12
+cpb = 1
+
+HOG7: C:\Users\MICRO 3\Desktop\arthur\dataset2\treinamento\HOG7
+ppc = 64
+ori = 12
+cpb = 1
+
+HOG8: C:\Users\MICRO 3\Desktop\arthur\dataset2\testes\HOG8
+ppc = 32
+ori = 12
+cpb = 1
+
+HOG8: C:\Users\MICRO 3\Desktop\arthur\dataset2\treinamento\HOG8
+ppc = 32
+ori = 12
+cpb = 1
+
+HOG9: C:\Users\MICRO 3\Desktop\arthur\dataset2\testes\HOG9
+ppc = 16
+ori = 12
+cpb = 1
+
+HOG9: C:\Users\MICRO 3\Desktop\arthur\dataset2\treinamento\HOG9
+ppc = 16
+ori = 12
+cpb = 1
+
+LBP1: C:\Users\MICRO 3\Desktop\arthur\dataset2\testes\LBP1
+numPoints = 12
+radius = 12
+
+LBP1: C:\Users\MICRO 3\Desktop\arthur\dataset2\treinamento\LBP1
+numPoints = 12
+radius = 12
+
+LBP2: C:\Users\MICRO 3\Desktop\arthur\dataset2\testes\LBP2
+numPoints = 24
+radius = 12
+
+LBP2: C:\Users\MICRO 3\Desktop\arthur\dataset2\treinamento\LBP2
+numPoints = 24
+radius = 12
+
+LBP3: C:\Users\MICRO 3\Desktop\arthur\dataset2\testes\LBP3
+numPoints = 32
+radius = 12
+
+LBP3: C:\Users\MICRO 3\Desktop\arthur\dataset2\treinamento\LBP3
+numPoints = 32
+radius = 12
+
+LBP4: C:\Users\MICRO 3\Desktop\arthur\dataset2\testes\LBP4
+numPoints = 12
+radius = 8
+
+LBP4: C:\Users\MICRO 3\Desktop\arthur\dataset2\treinamento\LBP4
+numPoints = 12
+radius = 8
+
+LBP5: C:\Users\MICRO 3\Desktop\arthur\dataset2\testes\LBP5
+numPoints = 24
+radius = 8
+
+LBP5: C:\Users\MICRO 3\Desktop\arthur\dataset2\treinamento\LBP5
+numPoints = 24
+radius = 8
+
+LBP6: C:\Users\MICRO 3\Desktop\arthur\dataset2\testes\LBP6
+numPoints = 32
+radius = 8
+
+LBP6: C:\Users\MICRO 3\Desktop\arthur\dataset2\treinamento\LBP6
+numPoints = 32
+radius = 8
+
+LBP7: C:\Users\MICRO 3\Desktop\arthur\dataset2\testes\LBP7
+numPoints = 12
+radius = 6
+
+LBP7: C:\Users\MICRO 3\Desktop\arthur\dataset2\treinamento\LBP7
+numPoints = 12
+radius = 6
+
+LBP8: C:\Users\MICRO 3\Desktop\arthur\dataset2\testes\LBP8
+numPoints = 24
+radius = 6
+
+LBP8: C:\Users\MICRO 3\Desktop\arthur\dataset2\treinamento\LBP8
+numPoints = 24
+radius = 6
+
+LBP9: C:\Users\MICRO 3\Desktop\arthur\dataset2\testes\LBP9
+numPoints = 32
+radius = 6
+
+LBP9: C:\Users\MICRO 3\Desktop\arthur\dataset2\treinamento\LBP9
+numPoints = 32
+radius = 6
+
+HOG1: C:\Users\MICRO 3\Desktop\arthur\dataset1\testes\HOG1
+ppc = 64
+ori = 8
+cpb = 1
+
+HOG1: C:\Users\MICRO 3\Desktop\arthur\dataset1\treinamento\HOG1
+ppc = 64
+ori = 8
+cpb = 1
+
+HOG2: C:\Users\MICRO 3\Desktop\arthur\dataset1\testes\HOG2
+ppc = 32
+ori = 8
+cpb = 1
+
+HOG2: C:\Users\MICRO 3\Desktop\arthur\dataset1\treinamento\HOG2
+ppc = 32
+ori = 8
+cpb = 1
+
+HOG3: C:\Users\MICRO 3\Desktop\arthur\dataset1\testes\HOG3
+ppc = 16
+ori = 8
+cpb = 1
+
+HOG3: C:\Users\MICRO 3\Desktop\arthur\dataset1\treinamento\HOG3
+ppc = 16
+ori = 8
+cpb = 1
+
+HOG4: C:\Users\MICRO 3\Desktop\arthur\dataset1\testes\HOG4
+ppc = 64
+ori = 10
+cpb = 1
+
+HOG4: C:\Users\MICRO 3\Desktop\arthur\dataset1\treinamento\HOG4
+ppc = 64
+ori = 10
+cpb = 1
+
+HOG5: C:\Users\MICRO 3\Desktop\arthur\dataset1\testes\HOG5
+ppc = 32
+ori = 10
+cpb = 1
+
+HOG5: C:\Users\MICRO 3\Desktop\arthur\dataset1\treinamento\HOG5
+ppc = 32
+ori = 10
+cpb = 1
+
+HOG6: C:\Users\MICRO 3\Desktop\arthur\dataset1\testes\HOG6
+ppc = 16
+ori = 10
+cpb = 1
+
+HOG6: C:\Users\MICRO 3\Desktop\arthur\dataset1\treinamento\HOG6
+ppc = 16
+ori = 10
+cpb = 1
+
+HOG7: C:\Users\MICRO 3\Desktop\arthur\dataset1\testes\HOG7
+ppc = 64
+ori = 12
+cpb = 1
+
+HOG7: C:\Users\MICRO 3\Desktop\arthur\dataset1\treinamento\HOG7
+ppc = 64
+ori = 12
+cpb = 1
+
+HOG8: C:\Users\MICRO 3\Desktop\arthur\dataset1\testes\HOG8
+ppc = 32
+ori = 12
+cpb = 1
+
+HOG8: C:\Users\MICRO 3\Desktop\arthur\dataset1\treinamento\HOG8
+ppc = 32
+ori = 12
+cpb = 1
+
+HOG9: C:\Users\MICRO 3\Desktop\arthur\dataset1\testes\HOG9
+ppc = 16
+ori = 12
+cpb = 1
+
+HOG9: C:\Users\MICRO 3\Desktop\arthur\dataset1\treinamento\HOG9
+ppc = 16
+ori = 12
+cpb = 1
+
+LBP1: C:\Users\MICRO 3\Desktop\arthur\dataset1\testes\LBP1
+numPoints = 12
+radius = 12
+
+LBP1: C:\Users\MICRO 3\Desktop\arthur\dataset1\treinamento\LBP1
+numPoints = 12
+radius = 12
+
+LBP2: C:\Users\MICRO 3\Desktop\arthur\dataset1\testes\LBP2
+numPoints = 24
+radius = 12
+
+LBP2: C:\Users\MICRO 3\Desktop\arthur\dataset1\treinamento\LBP2
+numPoints = 24
+radius = 12
+
+LBP3: C:\Users\MICRO 3\Desktop\arthur\dataset1\testes\LBP3
+numPoints = 32
+radius = 12
+
+LBP3: C:\Users\MICRO 3\Desktop\arthur\dataset1\treinamento\LBP3
+numPoints = 32
+radius = 12
+
+LBP4: C:\Users\MICRO 3\Desktop\arthur\dataset1\testes\LBP4
+numPoints = 12
+radius = 8
+
+LBP4: C:\Users\MICRO 3\Desktop\arthur\dataset1\treinamento\LBP4
+numPoints = 12
+radius = 8
+
+LBP5: C:\Users\MICRO 3\Desktop\arthur\dataset1\testes\LBP5
+numPoints = 24
+radius = 8
+
+LBP5: C:\Users\MICRO 3\Desktop\arthur\dataset1\treinamento\LBP5
+numPoints = 24
+radius = 8
+
+LBP6: C:\Users\MICRO 3\Desktop\arthur\dataset1\testes\LBP6
+numPoints = 32
+radius = 8
+
+LBP6: C:\Users\MICRO 3\Desktop\arthur\dataset1\treinamento\LBP6
+numPoints = 32
+radius = 8
+
+LBP7: C:\Users\MICRO 3\Desktop\arthur\dataset1\testes\LBP7
+numPoints = 12
+radius = 6
+
+LBP7: C:\Users\MICRO 3\Desktop\arthur\dataset1\treinamento\LBP7
+numPoints = 12
+radius = 6
+
+LBP8: C:\Users\MICRO 3\Desktop\arthur\dataset1\testes\LBP8
+numPoints = 24
+radius = 6
+
+LBP8: C:\Users\MICRO 3\Desktop\arthur\dataset1\treinamento\LBP8
+numPoints = 24
+radius = 6
+
+LBP9: C:\Users\MICRO 3\Desktop\arthur\dataset1\testes\LBP9
+numPoints = 32
+radius = 6
+
+LBP9: C:\Users\MICRO 3\Desktop\arthur\dataset1\treinamento\LBP9
+numPoints = 32
+radius = 6
 

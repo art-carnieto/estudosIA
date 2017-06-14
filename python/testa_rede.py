@@ -353,7 +353,6 @@ def main(argv):
             matrizConfusao = somaColuna(matrizConfusao, indiceResp, col)
             
         print acuracia(matrizConfusao)
-            
 
         nomeTabela = "confusao" + str(i) + ".txt"
         tabela = open(os.path.join(pastaExecucoes,nomeTabela), "w")
