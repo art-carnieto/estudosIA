@@ -184,7 +184,7 @@ def MLP(dadosTreinamento,dadosTeste,taxaDeAprendizado,epocas,erroMaximo,nroNeuro
             Y_in = np.dot(Z,pesosW)
             Y = sigmoid(Y_in)
             erroValidacao = np.vstack([erroValidacao, (T - Y)])
-        
+
         erroValidacao = np.asarray(erroValidacao)
 
         erroTreinoEpoca = erroQuadratico(erroTreinamento)
@@ -834,7 +834,7 @@ def main(argv):
         nomeModel = 'model' + str(i) + '.dat'
         model = open(os.path.join(caminhoSaida,nomeModel), "wb")
         data = (pesosV, pesosW)
-        pickle.dump(data, model)
+        pickle.dump(data, model, protocol=2)
         model.close()
 
         matrizConfusao = np.zeros((26,26))  # eixo x ==> resultado obtido / eixo y ==> resultado esperado

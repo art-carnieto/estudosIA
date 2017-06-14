@@ -120,7 +120,7 @@ def main(argv):
 			return
 
 		data = (ppc, ori, cpb)
-		pickle.dump(data, arqConfig)
+		pickle.dump(data, arqConfig, protocol=2)
 		arqConfig.close()
 
 		try:

@@ -110,7 +110,7 @@ def main(argv):
 			return
 
 		data = (numPoints, radius)
-		pickle.dump(data, arqConfig)
+		pickle.dump(data, arqConfig, protocol=2)
 		arqConfig.close()
 
 		try:
