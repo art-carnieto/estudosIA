@@ -65,6 +65,7 @@ dic1 = {'_41_': (1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
         '_58_': (0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0),
         '_59_': (0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0),
         '_5a_': (0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1)}
+        
 dic2 = {(1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0) : 'A',
         (0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0) : 'B',
         (0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0) : 'C',
@@ -191,7 +192,11 @@ def MLP(dadosTreinamento,dadosTeste,taxaDeAprendizado,epocas,erroMaximo,nroNeuro
 
         todosErrosEpocas.append(erroTreinoEpoca)
         todosErrosValidacao.append(erroValidacaoEpoca)
-
+        
+        if(erroTreinoEpoca < erroMaximo): 
+            print ("erro a baixo do maximo")
+            return v, w, todosErrosEpocas, todosErrosValidacao
+        
         # if epoca > 0:
         #     if todosErrosValidacao[epoca] > todosErrosValidacao[epoca-1]:
         #         print("SAIU PORQUE ERRO DE VALIDAÇÃO AUMENTOU")
@@ -384,7 +389,7 @@ def main(argv):
         print("argumento-06: Numero de neuronios da camada escondida da rede MLP")
         return
 
-    if not(argv[2].startswith("HOG", 0, 3) or argv[1].startswith("LBP", 0, 3)):
+    if not(argv[2].startswith("HOG", 0, 3) or argv[2].startswith("LBP", 0, 3)):
         print("Extrator desconhecido!")
         print("O argumento-01 deve ser o nome da pasta com a entrada e deve comecar por 'HOG' ou 'LBP' (sem aspas), por exemplo: 'HOG', 'HOG1', 'HOG2', ...")
         return
@@ -397,6 +402,7 @@ def main(argv):
     global erroMaximo
     global nroNeuronios
     '''
+    
     global dic1
     global dic2
     
@@ -407,8 +413,8 @@ def main(argv):
     erroMaximo = float(argv[5])
     nroNeuronios = int(argv[6])
 
-    pastaBase = "/home/arthur/SI/IA/EP/" # pasta selecionada pelo usuario
-    #pastaBase = "../../dataset1/" 
+    #pastaBase = "/home/arthur/SI/IA/EP/" # pasta selecionada pelo usuario
+    pastaBase = "../../" 
     #pastaBase = "/IA/dataset1/HOG1"
     #pastaBase = "/home/arthur/SI/IA/EP/"
     #pastaBase = "C:\\Users\\MICRO 2\\Desktop\\arthur"
@@ -509,7 +515,7 @@ def main(argv):
 
     for arquivo in ordenados: 
         entrada = np.loadtxt(os.path.join(caminhoEntradaTreino, arquivo), dtype='float', delimiter="\n")
-        entrada = np.append(entrada, [1.])
+        #entrada = np.append(entrada, [1.]) #camada de entrada, falta camada escondida
         if len(entrada.shape) == 1:
             entrada.shape = (entrada.shape[0], 1)
         entrada = np.transpose(entrada) # transpoe de uma matriz linha para uma matriz coluna
@@ -600,6 +606,7 @@ def main(argv):
         fold5 = np.vstack((listaS[800:1000], listaX[800:1000], listaZ[800:1000]))
 
     elif escolhaDataset == 2:
+        
         listaA = matrixTodasImagens[0:1000]
         listaB = matrixTodasImagens[1000:2000]
         listaC = matrixTodasImagens[2000:3000]
@@ -751,7 +758,7 @@ def main(argv):
     matrixImagensTeste = np.zeros((0,4))
 
     for arquivo in ordenados: 
-        entradaTeste = np.loadtxt(os.path.join(caminhoEntradaTeste, arquivo), dtype='float', delimiter="\n")
+        entradaTeste = np.loadtxt(os.path.join(caminhoEntradaTeste, arquivo), dtype='float', delimiter="\n") # ## testar com a pasta de testes ou o fold de teste?!
         entradaTeste = np.append(entradaTeste, [1.])
         if len(entradaTeste.shape) == 1:
             entradaTeste.shape = (entradaTeste.shape[0], 1)
