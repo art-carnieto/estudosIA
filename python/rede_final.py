@@ -393,15 +393,6 @@ def main(argv):
         print("Extrator desconhecido!")
         print("O argumento-01 deve ser o nome da pasta com a entrada e deve comecar por 'HOG' ou 'LBP' (sem aspas), por exemplo: 'HOG', 'HOG1', 'HOG2', ...")
         return
-
-    '''
-    Testar depois se as variaveis realmente precisam ser globais:
-    global extrator
-    global alfa
-    global epocas
-    global erroMaximo
-    global nroNeuronios
-    '''
     
     global dic1
     global dic2
@@ -549,50 +540,6 @@ def main(argv):
     return
     '''
 
-    np.set_printoptions(threshold = np.nan)
-    logTeste = open('testePrints.txt', 'w')
-
-    # logTeste.write("matrixTodasImagens" + '     len = ' + str(len(matrixTodasImagens)) + '     shape = ' + str(matrixTodasImagens.shape) + "\n")
-    # logTeste.write(str(matrixTodasImagens) + '\n\n')
-
-    # logTeste.write("matrixTodasImagens[0]" + '     len = ' + str(len(matrixTodasImagens[0])) + '     shape = ' + str(matrixTodasImagens[0].shape) + "\n")
-    # logTeste.write(str(matrixTodasImagens[0]) + '\n\n')
-
-    # logTeste.write("matrixTodasImagens[0][0]" + '     len = ' + str(len(matrixTodasImagens[0][0])) + '     shape = ' + str(matrixTodasImagens[0][0].shape) + "\n")
-    # logTeste.write(str(matrixTodasImagens[0][0]) + '\n\n')
-    # logTeste.write("matrixTodasImagens[0][1]" + '     len = ' + str(len(matrixTodasImagens[0][1])) + '     shape = Não tem shape!\n')
-    # logTeste.write(str(matrixTodasImagens[0][1]) + '\n\n')
-    # logTeste.write("matrixTodasImagens[0][2]" + '     len = Não tem len!     shape = Não tem shape!\n')
-    # logTeste.write(str(matrixTodasImagens[0][2]) + '\n\n')
-    # logTeste.write("matrixTodasImagens[0][3]" + '     len = ' + str(len(matrixTodasImagens[0][3])) + '     shape = ' + str(matrixTodasImagens[0][3].shape) + "\n")
-    # logTeste.write(str(matrixTodasImagens[0][3]) + '\n\n')
-
-    # logTeste.write("matrixTodasImagens[2999]" + '     len = ' + str(len(matrixTodasImagens[2999])) + '     shape = ' + str(matrixTodasImagens[2999].shape) + "\n")
-    # logTeste.write(str(matrixTodasImagens[2999]) + '\n\n')
-
-    # logTeste.write("\n\n\n")
-
-    # logTeste.write("matrixTodasImagens[0:1000]" + '     len = ' + str(len(matrixTodasImagens[0:1000])) + '     shape = ' + str(matrixTodasImagens[0:1000].shape) + "\n\n")
-
-    # for i in range(matrixTodasImagens[0:1000].shape[0]):
-    #     logTeste.write(str(matrixTodasImagens[0:1000][i][1]) + '\n')
-
-    # logTeste.write("\n\n\n")
-
-    # logTeste.write("matrixTodasImagens[1000:2000]" + '     len = ' + str(len(matrixTodasImagens[1000:2000])) + '     shape = ' + str(matrixTodasImagens[1000:2000].shape) + "\n\n")
-
-    # for i in range(matrixTodasImagens[1000:2000].shape[0]):
-    #     logTeste.write(str(matrixTodasImagens[1000:2000][i][1]) + '\n')
-
-    # logTeste.write("\n\n\n")
-
-    # logTeste.write("matrixTodasImagens[2000:3000]" + '     len = ' + str(len(matrixTodasImagens[2000:3000])) + '     shape = ' + str(matrixTodasImagens[2000:3000].shape) + "\n\n")
-
-    # for i in range(matrixTodasImagens[2000:3000].shape[0]):
-    #     logTeste.write(str(matrixTodasImagens[2000:3000][i][1]) + '\n')
-
-    # logTeste.write("\n\n\n")
-
     if escolhaDataset == 1:
 
         listaS = matrixTodasImagens[0:1000]
@@ -672,68 +619,6 @@ def main(argv):
     
     listaFolds = [fold1, fold2, fold3, fold4, fold5]
     # listaFolds = organizarFolds(matrixTodasImagens, 3, 5, len(arquivosImagem))
-    # logTeste.write("listaFolds" + '     len = ' + str(len(listaFolds)) + '     shape = Não tem shape!\n')
-    # logTeste.write("listaFolds[0]" + '     len = ' + str(len(listaFolds[0])) + '     shape = ' + str(listaFolds[0].shape) + '\n')
-    # logTeste.write("listaFolds[1]" + '     len = ' + str(len(listaFolds[1])) + '     shape = ' + str(listaFolds[1].shape) + '\n')
-    # logTeste.write("listaFolds[2]" + '     len = ' + str(len(listaFolds[2])) + '     shape = ' + str(listaFolds[2].shape) + '\n')
-    # logTeste.write("listaFolds[3]" + '     len = ' + str(len(listaFolds[3])) + '     shape = ' + str(listaFolds[3].shape) + '\n')
-    # logTeste.write("listaFolds[4]" + '     len = ' + str(len(listaFolds[4])) + '     shape = ' + str(listaFolds[4].shape) + '\n')
-
-    # logTeste.write("listaFolds[0][0]" + '     len = ' + str(len(listaFolds[0][0])) + '     shape = ' + str(listaFolds[0][0].shape) + '\n')
-    # logTeste.write("listaFolds[0][0][1]" + '     len = ' + str(len(listaFolds[0][0][1])) + '     shape = Não tem shape!\n')
-    # logTeste.write(listaFolds[0][0][1] + '\n')
-    # logTeste.write("listaFolds[0][0][2]" + '     len = Não tem len!     shape = Não tem shape!\n')
-    # logTeste.write(str(listaFolds[0][0][2]) + '\n')
-
-    # logTeste.write("fold1" + '     len = ' + str(len(fold1)) + '     shape = ' + str(fold1.shape) + "\n")
-    # logTeste.write("fold2" + '     len = ' + str(len(fold2)) + '     shape = ' + str(fold2.shape) + "\n")
-    # logTeste.write("fold3" + '     len = ' + str(len(fold3)) + '     shape = ' + str(fold3.shape) + "\n")
-    # logTeste.write("fold4" + '     len = ' + str(len(fold4)) + '     shape = ' + str(fold4.shape) + "\n")
-    # logTeste.write("fold5" + '     len = ' + str(len(fold5)) + '     shape = ' + str(fold5.shape) + "\n\n")
-
-    # logTeste.write("fold1:\n")
-    # for i in range(fold1.shape[0]):
-    #     logTeste.write(str(fold1[i][1]) + '\n')
-
-    # logTeste.write("fold2:\n")
-    # for i in range(fold2.shape[0]):
-    #     logTeste.write(str(fold2[i][1]) + '\n')
-
-    # logTeste.write("fold3:\n")
-    # for i in range(fold3.shape[0]):
-    #     logTeste.write(str(fold3[i][1]) + '\n')
-
-    # logTeste.write("fold4:\n")
-    # for i in range(fold4.shape[0]):
-    #     logTeste.write(str(fold4[i][1]) + '\n')
-
-    # logTeste.write("fold5:\n")
-    # for i in range(fold5.shape[0]):
-    #     logTeste.write(str(fold5[i][1]) + '\n')
-
-    # logTeste.write("\n\n\n")
-
-
-    # logTeste.write("listaFolds[0]" + '     len = ' + str(len(listaFolds[0])) + '     shape = ' + str(listaFolds[0].shape) + '\n')
-    # logTeste.write("listaFolds[1]" + '     len = ' + str(len(listaFolds[1])) + '     shape = ' + str(listaFolds[1].shape) + '\n')
-    # logTeste.write("listaFolds[2]" + '     len = ' + str(len(listaFolds[2])) + '     shape = ' + str(listaFolds[2].shape) + '\n')
-    # logTeste.write("listaFolds[3]" + '     len = ' + str(len(listaFolds[3])) + '     shape = ' + str(listaFolds[3].shape) + '\n')
-    # logTeste.write("listaFolds[4]" + '     len = ' + str(len(listaFolds[4])) + '     shape = ' + str(listaFolds[4].shape) + '\n')
-
-    # logTeste.write("\n\n\n")
-
-    # for fold in range(len(listaFolds)):
-    #     for i in range(listaFolds[fold].shape[0]):
-    #         logTeste.write('[' + str(i) + '] ==> ' + str(listaFolds[fold][i][1]) + '\n')
-    #     logTeste.write('\n\n')
-
-    # for i in range(listaFolds[0].shape[0]):
-    #     logTeste.write('[' + str(i) + '] ==> ' + str(listaFolds[0][i][1]) + ' '
-    #                                         + str(listaFolds[1][i][1]) + ' '
-    #                                         + str(listaFolds[2][i][1]) + ' '
-    #                                         + str(listaFolds[3][i][1]) + ' '
-    #                                         + str(listaFolds[4][i][1]) + ' ' + '\n')
-
 
     try:
         caminhoEntradaTeste = os.path.join(pastaBase, "testes", extrator)
@@ -772,7 +657,6 @@ def main(argv):
     
     #folds
     for i in range(len(listaFolds)):
-        logTeste.write('i = ' + str(i) + '\n')
         teste = np.copy(listaFolds[i])
         treinamento = np.zeros((0, 4))
         for j in range(len(listaFolds)):
@@ -780,42 +664,10 @@ def main(argv):
                 logTeste.write('   j = ' + str(j) + '\n')
                 treinamento = np.vstack((treinamento, np.copy(listaFolds[j])))
 
-        # logTeste.write("teste" + '     len = ' + str(len(teste)) + '     shape = ' + str(teste.shape) + '\n')
-        # logTeste.write("treinamento" + '     len = ' + str(len(treinamento)) + '     shape = ' + str(teste.shape) + '\n')
-
-        # logTeste.write("treinamento[0]" + '     len = ' + str(len(treinamento[0])) + '     shape = ' + str(treinamento[0].shape) + "\n")
-        # logTeste.write(str(treinamento[0]) + '\n\n')
-        # logTeste.write("treinamento[599]" + '     len = ' + str(len(treinamento[599])) + '     shape = ' + str(treinamento[599].shape) + "\n")
-        # logTeste.write(str(treinamento[599]) + '\n\n')
-        # logTeste.write("treinamento[600]" + '     len = ' + str(len(treinamento[600])) + '     shape = ' + str(treinamento[600].shape) + "\n")
-        # logTeste.write(str(treinamento[600]) + '\n\n')
-        # logTeste.write("treinamento[2399]" + '     len = ' + str(len(treinamento[2399])) + '     shape = ' + str(treinamento[2399].shape) + "\n")
-        # logTeste.write(str(treinamento[2399]) + '\n\n')
-
-        # logTeste.write("\n\n\n")
-        logTeste.write("alfa" + '     len = Não tem len!     shape = Não tem shape!\n')
-        logTeste.write(str(alfa) + '\n\n')
-        logTeste.write("epocas" + '     len = Não tem len!     shape = Não tem shape!\n')
-        logTeste.write(str(epocas) + '\n\n')
-        logTeste.write("nroNeuronios" + '     len = Não tem len!     shape = Não tem shape!\n')
-        logTeste.write(str(nroNeuronios) + '\n\n')
-        logTeste.write("vInicial" + '     len = ' + str(len(vInicial)) + '     shape = ' + str(vInicial.shape) + "\n")
-        logTeste.write(str(vInicial) + '\n\n')
-        logTeste.write("wInicial" + '     len = ' + str(len(wInicial)) + '     shape = ' + str(wInicial.shape) + "\n")
-        logTeste.write(str(wInicial) + '\n\n')
-
         vAux = np.copy(vInicial)
         wAux = np.copy(wInicial)
 
         pesosV, pesosW, errosTreino, errosValidacao = MLP(treinamento,teste,alfa,epocas,erroMaximo,nroNeuronios, vAux, wAux)
-
-        logTeste.write("\n\n\n")
-        logTeste.write("saida" + '     len = ' + str(len(saida)) + '     shape = ' + str(saida.shape) + "\n")
-        logTeste.write(str(saida) + '\n\n')
-        logTeste.write("pesosV" + '     len = ' + str(len(pesosV)) + '     shape = ' + str(pesosV.shape) + "\n")
-        logTeste.write(str(pesosV) + '\n\n')
-        logTeste.write("pesosW" + '     len = ' + str(len(pesosW)) + '     shape = ' + str(pesosW.shape) + "\n")
-        logTeste.write(str(pesosW) + '\n\n')
 
         plt.plot(errosTreino, label='Erro de treinamento')
         plt.plot(errosValidacao, label='Erro de validacao')
@@ -836,10 +688,6 @@ def main(argv):
         data = (pesosV, pesosW)
         pickle.dump(data, model, protocol=2)
         model.close()
-
-        matrizConfusao = np.zeros((26,26))  # eixo x ==> resultado obtido / eixo y ==> resultado esperado
-
-
 
     erro.close()
 
