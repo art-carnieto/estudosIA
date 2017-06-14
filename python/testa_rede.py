@@ -93,11 +93,14 @@ dic2 = {(1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0) : 'A',
         (0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0) : 'Y',
         (0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1) : 'Z'}
 
+def sigmoid(x):
+  return 1 / (1 + np.exp(-x))
+
 def testaMLP(entrada, pesosV, pesosW):
     if len(entrada.shape) == 1:
         entrada.shape = (entrada.shape[0],1)
 
-    X = np.copy(np.transpose(entrada.copy()))
+    X = np.copy(entrada.copy())
 
     Z_in = np.dot(X,pesosV)
 
@@ -220,9 +223,8 @@ def geraSaidaEsperada(arquivo):
 
     return saidaEsperada, letra, indice
 
-def somaColuna(matrizBase, vetorSoma, col):
-    for i in range(len(matrizBase)):
-        matrizBase[i][col] = matrizBase[i][col] + vetorSoma[i]
+def somaColuna(matrizBase, indiceSoma, col):
+    matrizBase[indiceSoma][col] = matrizBase[indiceSoma][col] + 1
 
     return matrizBase
 
@@ -259,7 +261,7 @@ def main(argv):
     #pastaBase = "C:\\Users\\MICRO 2\\Desktop\\arthur"
     #pastaBase = "C:\\Users\\MICRO 3\\Desktop\\arthur"
 
-    pastaExecucoes = ""
+    pastaExecucoes = "/home/ubuntu/workspace/IA/estudosIA/python"
     pastaExecucoes = os.path.join(pastaExecucoes,execucao)
     
     if escolhaDataset == 1:
@@ -298,26 +300,30 @@ def main(argv):
         auxMeta = np.array([saida,letra,indice,entradaTeste])
         matrixImagensTeste = np.vstack([matrixImagensTeste,auxMeta])
 
-    matrizConfusao = np.zeros((26,26))  # eixo x ==> resultado obtido / eixo y ==> resultado esperado
+    
+    print(matrixImagensTeste.shape)
     
     #folds
     for i in range(5):  # 5 = nro de folds (numero de arquivos model.dat)
+        matrizConfusao = np.zeros((26,26))  # eixo x ==> resultado obtido / eixo y ==> resultado esperado
         nomeModel = 'model' + str(i) + '.dat'
         model = open(os.path.join(pastaExecucoes,nomeModel), "rb")
         data = pickle.load(model)
         pesosV = data[0]
         pesosW = data[1]
         model.close()
-
+        
         for entrada in range(matrixImagensTeste.shape[0]):
-            saidaObtida = testaMLP(matrixImagensTeste[entrada][0], pesosV, pesosW)
-            
+            saidaObtida = testaMLP(matrixImagensTeste[entrada][3], pesosV, pesosW)
+            saidaObtida = np.asarray(saidaObtida)
             # sobre a funcao round: dependendo do intervalo que ele arredonda temos que tomar cuidado
             # nao sei se 0.6 ele arredonda para 1... tem que pesquisar
             # podemos modificar isso para um valor nosso, por exemplo: tudo abaixo de 0.7 vira 0 e acima ou igual vira 1
-            saidaArredondada = []
-            for aux in range(saida.size):
-                saidaArredondada.append(round(saida[0][aux], 0))
+            
+            
+            
+            indiceResp = np.argmax(saidaObtida)
+            #saidaArredondada.append(max(saidaObtida[0][aux], 0))
             
             # nao sei se vai precisar dessa parte do letraFinal...
             # try:
@@ -327,8 +333,16 @@ def main(argv):
 
             # modificar aqui a matriz de confusao somando o valor obtido da saida nela
             col = matrixImagensTeste[entrada][2] # indice da matriz de confusao
-            somaColuna(matrizConfusao, saidaArredondada, col) 
+            
+            matrizConfusao = somaColuna(matrizConfusao, indiceResp, col) 
 
+        nomeTabela = "confusao" + str(i) + ".txt"
+        tabela = open(os.path.join(pastaExecucoes,nomeTabela), "w")
+        for i in range(len(matrizConfusao)):
+            for j in range(len(matrizConfusao[i])):
+                tabela.write(str(matrizConfusao[i][j]) + " ")
+            tabela.write("\n")
+            
 
     # o que falta fazer: printar a matriz de confusao num .txt ou outra coisa para gravar
     # fazer o calculo da acuracia com a matriz de confusao e gravar tambem

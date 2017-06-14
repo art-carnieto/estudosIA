@@ -109,6 +109,7 @@ def criaMatrizPesosDefault(linhas,colunas):
 
 def modificaTaxaAprendizado(taxaAprendizado):
     return (6*taxaAprendizado)/7 
+    
 
 def MLP(dadosTreinamento,dadosTeste,taxaDeAprendizado,epocas,erroMaximo,nroNeuronios,pesosV,pesosW):
     
@@ -349,33 +350,6 @@ def somaColuna(matrizBase, vetorSoma, col):
 
     return matrizBase
 
-def corte(a,inicio,final):
-    
-    b = a[:, inicio:final ]
-    
-    c = b.flatten()
-    
-    return c
-
-def organizarFolds(matrizTodasImagens, numLetras, numFolds, numImagens):
-    imagensPorLetra = numImagens / numLetras 
-    imagensPorFold = numImagens / numFolds
-    letrasPorFold = imagensPorFold / numLetras
-
-    listaLetras = np.zeros((numLetras,imagensPorLetra), dtype='object')
-
-    for i in range(listaLetras.shape[0]): #letras
-        for j in range(listaLetras.shape[1]): #imagem em letras
-            listaLetras[i][j] = matrizTodasImagens[i * imagensPorLetra + j]
-
-    folds = np.zeros((numFolds,imagensPorFold), dtype='object')
-
-    for k in range(numFolds):
-        folds[k] = corte(listaLetras , letrasPorFold * k , letrasPorFold * (k+1) )
-
-    return folds
-
-
 def main(argv):
 
     if(len(argv) < 7):
@@ -514,32 +488,6 @@ def main(argv):
         auxMeta = np.array([saida,letra,indice,entrada])
         matrixTodasImagens = np.vstack([matrixTodasImagens,auxMeta])
 
-    #imagensPorLetra = matrixTodasImagens.shape[0] / 26
-
-    #listaLetras = np.zeros((26,imagensPorLetra), dtype='object')
-    
-    #dados[linha][informação (saida,letra,indice,entrada)][segunda dimenção da informação (para saida / entrada)]
-    
-    #dados[linha][3][iterador] -> entrada (X)
-    #dados[linha][0][iterador] -> saida (target)
-    
-    '''
-    for i in range(listaLetras.shape[0]): #letras
-        for j in range(listaLetras.shape[1]): #imagem em letras
-            listaLetras[i][j] = matrixTodasImagens[i * imagensPorLetra + j]
-            print(listaLetras[i][j][1])
-    
-    for i in range(3): #letras
-        print(listaLetras[9][i][1])
-        
-    print(listaLetras.shape[0])
-    print(listaLetras.shape[1])
-    print("-------")
-    print(listaLetras[9][1][1])
-    
-    return
-    '''
-
     if escolhaDataset == 1:
 
         listaS = matrixTodasImagens[0:1000]
@@ -661,7 +609,6 @@ def main(argv):
         treinamento = np.zeros((0, 4))
         for j in range(len(listaFolds)):
             if(j != i):
-                logTeste.write('   j = ' + str(j) + '\n')
                 treinamento = np.vstack((treinamento, np.copy(listaFolds[j])))
 
         vAux = np.copy(vInicial)
@@ -689,8 +636,8 @@ def main(argv):
         pickle.dump(data, model, protocol=2)
         model.close()
 
-    erro.close()
-
+    erro.close
+    
     ts = time.time()
     st = datetime.datetime.fromtimestamp(ts).strftime('%d/%m/%Y %H:%M:%S')
     print("Fim da execucao da rede em " + str(st) + "\n\n")
