@@ -233,7 +233,6 @@ def acuracia(x):
     count = 0
     total = 0
     
-    
     if(x.shape[0] == x.shape[1]):
         for i in range(x.shape[0]):
             count += x[i][i]
@@ -271,13 +270,13 @@ def main(argv):
     print("Iniciando os testes em " + st)
 
     #pastaBase = "/home/arthur/SI/IA/EP/" # pasta selecionada pelo usuario
-    pastaBase = "../../" 
+    pastaBase = "C:\\Users\\Arthur\\Dropbox\\SI\\IA" 
     #pastaBase = "/IA/dataset1/HOG1"
     #pastaBase = "/home/arthur/SI/IA/EP/"
     #pastaBase = "C:\\Users\\MICRO 2\\Desktop\\arthur"
     #pastaBase = "C:\\Users\\MICRO 3\\Desktop\\arthur"
 
-    pastaExecucoes = "/home/ubuntu/workspace/IA/estudosIA/python"
+    pastaExecucoes = "C:\\Users\\Arthur\\Documents\\GitHub\\estudosIA\\python"
     pastaExecucoes = os.path.join(pastaExecucoes,execucao)
     
     if escolhaDataset == 1:
@@ -315,9 +314,6 @@ def main(argv):
         saida,letra,indice = geraSaidaEsperada(arquivo)
         auxMeta = np.array([saida,letra,indice,entradaTeste])
         matrixImagensTeste = np.vstack([matrixImagensTeste,auxMeta])
-
-    
-    print(matrixImagensTeste.shape)
     
     #folds
     for i in range(5):  # 5 = nro de folds (numero de arquivos model.dat)
@@ -350,18 +346,19 @@ def main(argv):
             
             matrizConfusao = somaColuna(matrizConfusao, indiceResp, col)
             
-        print acuracia(matrizConfusao)
 
-        nomeTabela = "confusao" + str(i) + ".txt"
+        nomeTabela = "confusao" + str(i) + ".csv"
         tabela = open(os.path.join(pastaExecucoes,nomeTabela), "w")
+        tabela.write(' ,A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z\n')
+        letraLoop = 'A'
         for i in range(len(matrizConfusao)):
+            tabela.write(letraLoop + ',')
             for j in range(len(matrizConfusao[i])):
-                tabela.write(str(matrizConfusao[i][j]) + " ")
+                tabela.write(str(matrizConfusao[i][j]) + ",")
             tabela.write("\n")
-            
-
-    # o que falta fazer: printar a matriz de confusao num .txt ou outra coisa para gravar
-    # fazer o calculo da acuracia com a matriz de confusao e gravar tambem
+            letraLoop = chr(ord(letraLoop)+1)
+        tabela.write('\n')
+        tabela.write('Acuracia geral,' + str(acuracia(matrizConfusao)))
 
     ts = time.time()
     st = datetime.datetime.fromtimestamp(ts).strftime('%d/%m/%Y %H:%M:%S')
