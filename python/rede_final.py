@@ -377,6 +377,7 @@ def main(argv):
     epocas = int(argv[4])
     erroMaximo = float(argv[5])
     nroNeuronios = int(argv[6])
+    letras = 0
 
     #pastaBase = "/home/arthur/SI/IA/EP/" # pasta selecionada pelo usuario
     pastaBase = "../../" 
@@ -387,8 +388,10 @@ def main(argv):
     
     if escolhaDataset == 1:
         pastaBase = os.path.join(pastaBase, "dataset1")
+        letras = 3
     elif escolhaDataset == 2:
         pastaBase = os.path.join(pastaBase, "dataset2")
+        letras = 26
     else:
         print("Dataset escolhido invalido! Deve ser o número 1 ou 2.")
         return
@@ -449,7 +452,7 @@ def main(argv):
         "rede_alpha : " + str(alfa),
         "rede_camada_Z_neuronios : " + str(nroNeuronios),
         "rede_camada_Z_funcao_de_ativacao : sigmoide",
-        "rede_camada_Y_neuronios : 3",
+        "rede_camada_Y_neuronios : " = str(letras),
         "rede_camada_Y_funcao_de_ativacao : sigmoide",
         "rede_inicializacao_pesos : aleatoria",
         "rede_min_epocas : 0",
