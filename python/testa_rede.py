@@ -243,6 +243,19 @@ def acuracia(x):
     
     return count / float(total)
 
+def acuraciaClasse(nroLetra, matriz):
+    nroLetra = nroLetra - 65
+
+    count = matriz[nroLetra][nroLetra]
+    total = 0
+
+    for i in range(matriz.shape[0]):
+        total += matriz[nroLetra][i]
+
+    if(total != 0):
+        return count / float(total)
+    return 0.0
+
 def main(argv):
 
     if(len(argv) < 4):
@@ -349,12 +362,13 @@ def main(argv):
 
         nomeTabela = "confusao" + str(i) + ".csv"
         tabela = open(os.path.join(pastaExecucoes,nomeTabela), "w")
-        tabela.write(' ,A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z\n')
+        tabela.write(' ,A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z,acuracia\n')
         letraLoop = 'A'
         for i in range(len(matrizConfusao)):
             tabela.write(letraLoop + ',')
             for j in range(len(matrizConfusao[i])):
                 tabela.write(str(matrizConfusao[i][j]) + ",")
+            tabela.write(str(acuraciaClasse(ord(letraLoop), matrizConfusao)))
             tabela.write("\n")
             letraLoop = chr(ord(letraLoop)+1)
         tabela.write('\n')
