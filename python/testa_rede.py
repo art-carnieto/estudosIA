@@ -289,15 +289,17 @@ def main(argv):
     #pastaBase = "C:\\Users\\MICRO 2\\Desktop\\arthur"
     #pastaBase = "C:\\Users\\MICRO 3\\Desktop\\arthur"
 
-    pastaExecucoes = "C:\\Users\\Arthur\\Documents\\GitHub\\estudosIA\\python"
+    pastaExecucoes = "C:\\Users\\Arthur\\Desktop\\execucoes IA\\treinamento2LBP"
     pastaExecucoes = os.path.join(pastaExecucoes,execucao)
     
     if escolhaDataset == 1:
         pastaBase = os.path.join(pastaBase, "dataset1")
     elif escolhaDataset == 2:
         pastaBase = os.path.join(pastaBase, "dataset2")
+    elif escolhaDataset == 3:
+        pastaBase = os.path.join(pastaBase, "datasetRec")
     else:
-        print("Dataset escolhido invalido! Deve ser o número 1 ou 2.")
+        print("Dataset escolhido invalido! Deve ser o número 1, 2 ou 3.")
         return
 
     caminhoEntradaTeste = os.path.join(pastaBase, "testes", extrator)
@@ -333,7 +335,7 @@ def main(argv):
         matrizConfusao = np.zeros((26,26))  # eixo x ==> resultado obtido / eixo y ==> resultado esperado
         nomeModel = 'model' + str(i) + '.dat'
         model = open(os.path.join(pastaExecucoes,nomeModel), "rb")
-        data = pickle.load(model)
+        data = pickle.load(model, encoding='latin1')
         pesosV = data[0]
         pesosW = data[1]
         model.close()

@@ -392,8 +392,11 @@ def main(argv):
     elif escolhaDataset == 2:
         pastaBase = os.path.join(pastaBase, "dataset2")
         letras = 26
+    elif escolhaDataset == 3:
+        pastaBase = os.path.join(pastaBase, "datasetRec")
+        letras = 10
     else:
-        print("Dataset escolhido invalido! Deve ser o número 1 ou 2.")
+        print("Dataset escolhido invalido! Deve ser o número 1, 2 ou 3.")
         return
 
     try:
@@ -567,6 +570,34 @@ def main(argv):
                            listaQ[800:1000], listaR[800:1000], listaS[800:1000], listaT[800:1000],
                            listaU[800:1000], listaV[800:1000], listaW[800:1000], listaX[800:1000],
                            listaY[800:1000], listaZ[800:1000]))
+
+    elif escolhaDataset == 3:
+        
+        listaA = matrixTodasImagens[0:1000]
+        listaB = matrixTodasImagens[1000:2000]
+        listaC = matrixTodasImagens[2000:3000]
+        listaE = matrixTodasImagens[3000:4000]
+        listaH = matrixTodasImagens[4000:5000]
+        listaI = matrixTodasImagens[5000:6000]
+        listaK = matrixTodasImagens[6000:7000]
+        listaM = matrixTodasImagens[7000:8000]
+        listaP = matrixTodasImagens[8000:9000]
+        listaX = matrixTodasImagens[9000:10000]
+        
+        fold1 = np.vstack((listaA[0:200], listaB[0:200], listaC[0:200], listaE[0:200], listaH[0:200],
+                           listaI[0:200], listaK[0:200], listaM[0:200], listaP[0:200], listaX[0:200]))
+
+        fold2 = np.vstack((listaA[200:400], listaB[200:400], listaC[200:400], listaE[200:400], listaH[200:400],
+                           listaI[200:400], listaK[200:400], listaM[200:400], listaP[200:400], listaX[200:400]))
+
+        fold3 = np.vstack((listaA[400:600], listaB[400:600], listaC[400:600], listaE[400:600], listaH[400:600],
+                           listaI[400:600], listaK[400:600], listaM[400:600], listaP[400:600], listaX[400:600]))
+
+        fold4 = np.vstack((listaA[600:800], listaB[600:800], listaC[600:800], listaE[600:800], listaH[600:800],
+                           listaI[600:800], listaK[600:800], listaM[600:800], listaP[600:800], listaX[600:800]))
+
+        fold5 = np.vstack((listaA[800:1000], listaB[800:1000], listaC[800:1000], listaE[800:1000], listaH[800:1000],
+                           listaI[800:1000], listaK[800:1000], listaM[800:1000], listaP[800:1000], listaX[800:1000]))
     
     listaFolds = [fold1, fold2, fold3, fold4, fold5]
     # listaFolds = organizarFolds(matrixTodasImagens, 3, 5, len(arquivosImagem))
