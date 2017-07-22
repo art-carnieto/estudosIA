@@ -355,7 +355,7 @@ def main(argv):
     if(len(argv) < 7):
         print("Numero errado de argumentos!")
         print("Usagem do rede_final.py:")
-        print("argumento-01: Dataset utilizado (número 1 ou 2)")
+        print("argumento-01: Dataset utilizado (número 1, 2 ou 3)")
         print("argumento-02: Pasta com a entrada da rede, deve comecar por 'HOG' ou 'LBP' (sem aspas)")
         print("argumento-03: Alfa (taxa de aprendizado) a ser usado na rede")
         print("argumento-04: Numero de epocas que sera usado no MLP")
@@ -385,6 +385,7 @@ def main(argv):
     #pastaBase = "/home/arthur/SI/IA/EP/"
     #pastaBase = "C:\\Users\\MICRO 2\\Desktop\\arthur"
     #pastaBase = "C:\\Users\\MICRO 3\\Desktop\\arthur"
+    #pastaBase = "C:\\Users\\Arthur\\Dropbox\\SI\\IA"
     
     if escolhaDataset == 1:
         pastaBase = os.path.join(pastaBase, "dataset1")
@@ -455,7 +456,7 @@ def main(argv):
         "rede_alpha : " + str(alfa),
         "rede_camada_Z_neuronios : " + str(nroNeuronios),
         "rede_camada_Z_funcao_de_ativacao : sigmoide",
-        "rede_camada_Y_neuronios : " = str(letras),
+        "rede_camada_Y_neuronios : " + str(letras),
         "rede_camada_Y_funcao_de_ativacao : sigmoide",
         "rede_inicializacao_pesos : aleatoria",
         "rede_min_epocas : 0",
