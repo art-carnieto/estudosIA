@@ -93,6 +93,17 @@ dic2 = {(1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0) : 'A',
         (0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0) : 'Y',
         (0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1) : 'Z'}
 
+dic1Rec = {'_41_': (1,0,0,0,0,0,0,0,0,0),
+           '_42_': (0,1,0,0,0,0,0,0,0,0),
+           '_43_': (0,0,1,0,0,0,0,0,0,0),
+           '_45_': (0,0,0,1,0,0,0,0,0,0),
+           '_48_': (0,0,0,0,1,0,0,0,0,0),
+           '_49_': (0,0,0,0,0,1,0,0,0,0),
+           '_4b_': (0,0,0,0,0,0,1,0,0,0),
+           '_4d_': (0,0,0,0,0,0,0,1,0,0),
+           '_50_': (0,0,0,0,0,0,0,0,1,0),
+           '_58_': (0,0,0,0,0,0,0,0,0,1)}
+
 def sigmoid(x):
   return 1 / (1 + np.exp(-x))
 
@@ -223,6 +234,54 @@ def geraSaidaEsperada(arquivo):
 
     return saidaEsperada, letra, indice
 
+def geraSaidaEsperadaRec(arquivo):
+    if "_41_" in arquivo:
+        saidaEsperada = np.asarray(dic1Rec['_41_'])
+        letra = "A"
+        indice = 0
+    elif "_42_" in arquivo:
+        saidaEsperada = np.asarray(dic1Rec['_42_'])
+        letra = "B"
+        indice = 1
+    elif "_43_" in arquivo:
+        saidaEsperada = np.asarray(dic1Rec['_43_'])
+        letra = "C"
+        indice = 2
+    elif "_45_" in arquivo:
+        saidaEsperada = np.asarray(dic1Rec['_45_'])
+        letra = "E"
+        indice = 3
+    elif "_48_" in arquivo:
+        saidaEsperada = np.asarray(dic1Rec['_48_'])
+        letra = "H"
+        indice = 4
+    elif "_49_" in arquivo:
+        saidaEsperada = np.asarray(dic1Rec['_49_'])
+        letra = "I"
+        indice = 5
+    elif "_4b_" in arquivo:
+        saidaEsperada = np.asarray(dic1Rec['_4b_'])
+        letra = "K"
+        indice = 6
+    elif "_4d_" in arquivo:
+        saidaEsperada = np.asarray(dic1Rec['_4d_'])
+        letra = "M"
+        indice = 7
+    elif "_50_" in arquivo:
+        saidaEsperada = np.asarray(dic1Rec['_50_'])
+        letra = "P"
+        indice = 8
+    elif "_58_" in arquivo:
+        saidaEsperada = np.asarray(dic1Rec['_58_'])
+        letra = "X"
+        indice = 9
+    else:
+        print("\nERRO: arquivo de entrada nao faz parte do conjunto de letras! (nome errado ou alterado)\n")
+        return None, None, None
+
+    return saidaEsperada, letra, indice
+
+
 def somaColuna(matrizBase, indiceSoma, col):
     matrizBase[indiceSoma][col] = matrizBase[indiceSoma][col] + 1
 
@@ -261,7 +320,7 @@ def main(argv):
     if(len(argv) < 4):
         print("Numero errado de argumentos!")
         print("Usagem do rede_final.py:")
-        print("argumento-01: Dataset utilizado (número 1 ou 2)")
+        print("argumento-01: Dataset utilizado (número 1, 2 ou 3)")
         print("argumento-02: Pasta com a entrada da rede, deve comecar por 'HOG' ou 'LBP' (sem aspas)")
         print("argumento-03: Pasta com a execucao da rede (que contem os arquivos de saida da rede), sem aspas")
         return
@@ -273,7 +332,8 @@ def main(argv):
     
     global dic1
     global dic2
-    
+    global dic1Rec
+
     escolhaDataset = int(argv[1])
     extrator = str(argv[2])
     execucao = str(argv[3])
@@ -289,8 +349,12 @@ def main(argv):
     #pastaBase = "C:\\Users\\MICRO 2\\Desktop\\arthur"
     #pastaBase = "C:\\Users\\MICRO 3\\Desktop\\arthur"
 
-    pastaExecucoes = "C:\\Users\\Arthur\\Desktop\\execucoes IA\\treinamento2LBP"
+    pastaExecucoes = "C:\\Users\\Arthur\\Documents\\GitHub\\estudosIA\\python"
     pastaExecucoes = os.path.join(pastaExecucoes,execucao)
+    
+    if escolhaDataset != 3:
+        print("VERSAO REC: argumento-01 (escolhaDataset) pode ser somente 3! Depois isso pode ser arrumado em versoes futuras")
+        return
     
     if escolhaDataset == 1:
         pastaBase = os.path.join(pastaBase, "dataset1")
@@ -326,13 +390,13 @@ def main(argv):
         if len(entradaTeste.shape) == 1:
             entradaTeste.shape = (entradaTeste.shape[0], 1)
         entradaTeste = np.transpose(entradaTeste) # transpoe de uma matriz linha para uma matriz coluna
-        saida,letra,indice = geraSaidaEsperada(arquivo)
+        saida,letra,indice = geraSaidaEsperadaRec(arquivo)
         auxMeta = np.array([saida,letra,indice,entradaTeste])
         matrixImagensTeste = np.vstack([matrixImagensTeste,auxMeta])
     
     #folds
     for i in range(5):  # 5 = nro de folds (numero de arquivos model.dat)
-        matrizConfusao = np.zeros((26,26))  # eixo x ==> resultado obtido / eixo y ==> resultado esperado
+        matrizConfusao = np.zeros((10,10))  # eixo x ==> resultado obtido / eixo y ==> resultado esperado
         nomeModel = 'model' + str(i) + '.dat'
         model = open(os.path.join(pastaExecucoes,nomeModel), "rb")
         data = pickle.load(model, encoding='latin1')
@@ -364,15 +428,14 @@ def main(argv):
 
         nomeTabela = "confusao" + str(i) + ".csv"
         tabela = open(os.path.join(pastaExecucoes,nomeTabela), "w")
-        tabela.write(' ,A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z,acuracia\n')
-        letraLoop = 'A'
+        tabela.write(' ,A,B,C,E,H,I,K,M,P,X\n')
+        letraLoop = ['A','B','C','E','H','I','K','M','P','X']
         for i in range(len(matrizConfusao)):
-            tabela.write(letraLoop + ',')
+            tabela.write(letraLoop[i] + ',')
             for j in range(len(matrizConfusao[i])):
                 tabela.write(str(matrizConfusao[i][j]) + ",")
-            tabela.write(str(acuraciaClasse(ord(letraLoop), matrizConfusao)))
+            #tabela.write(str(acuraciaClasse(i, matrizConfusao)))
             tabela.write("\n")
-            letraLoop = chr(ord(letraLoop)+1)
         tabela.write('\n')
         tabela.write('Acuracia geral,' + str(acuracia(matrizConfusao)))
 

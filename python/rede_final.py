@@ -93,6 +93,17 @@ dic2 = {(1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0) : 'A',
         (0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0) : 'Y',
         (0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1) : 'Z'}
 
+dic1Rec = {'_41_': (1,0,0,0,0,0,0,0,0,0),
+           '_42_': (0,1,0,0,0,0,0,0,0,0),
+           '_43_': (0,0,1,0,0,0,0,0,0,0),
+           '_45_': (0,0,0,1,0,0,0,0,0,0),
+           '_48_': (0,0,0,0,1,0,0,0,0,0),
+           '_49_': (0,0,0,0,0,1,0,0,0,0),
+           '_4b_': (0,0,0,0,0,0,1,0,0,0),
+           '_4d_': (0,0,0,0,0,0,0,1,0,0),
+           '_50_': (0,0,0,0,0,0,0,0,1,0),
+           '_58_': (0,0,0,0,0,0,0,0,0,1)}
+
 # np.random.seed(1) #semente de aleatoriedade
 
 def sigmoid(x):
@@ -107,21 +118,17 @@ def erroQuadratico(erros):
 def criaMatrizPesosDefault(linhas,colunas):
     return np.random.random((linhas,colunas))
 
-def modificaTaxaAprendizado(taxaAprendizado):
-    return (6*taxaAprendizado)/7 
-    
-
-def MLP(dadosTreinamento,dadosTeste,taxaDeAprendizado,epocas,erroMaximo,nroNeuronios,pesosV,pesosW):
+def MLP(dadosTreinamento,dadosTeste,taxaDeAprendizado,epocas,erroMaximo,nroNeuronios,pesosV,pesosW,decaimentoTxAprendizado):
     
     todosErrosEpocas = []
     todosErrosValidacao = []
     
     #TESTE TREINAMENTO
     for epoca in range(epocas):
-        erroTreinamento = np.zeros((0,26))
-        erroValidacao = np.zeros((0,26))
+        erroTreinamento = np.zeros((0,dadosTreinamento[0][0].shape[0]))
+        erroValidacao = np.zeros((0,dadosTreinamento[0][0].shape[0]))
 
-        modificaTaxaAprendizado(taxaDeAprendizado)
+        arqLog.write("   epoca = " + str(epoca) + "\n")
 
         for i in range(dadosTreinamento.shape[0]):     # loop de treinamento dos folds atuais
             
@@ -212,10 +219,17 @@ def MLP(dadosTreinamento,dadosTeste,taxaDeAprendizado,epocas,erroMaximo,nroNeuro
         np.random.shuffle(dadosTreinamento) # embaralha a ordem dos folds de treinamento
         np.random.shuffle(dadosTeste) # embaralha a ordem dos fold de treino
 
+        arqLog.write("   txAprendizado = " + str(taxaDeAprendizado))
+        
+        taxaDeAprendizado = taxaDeAprendizado * decaimentoTxAprendizado
+        
+        arqLog.write("\t txModificacao = " + str(decaimentoTxAprendizado) +
+                     "\t novaTxAprendizado = " + str(taxaDeAprendizado) + "\n")
+
     todosErrosEpocas = np.asarray(todosErrosEpocas)
     todosErrosValidacao = np.asarray(todosErrosValidacao)
      
-    return v, w, todosErrosEpocas, todosErrosValidacao
+    return v, w, np.copy(todosErrosEpocas), np.copy(todosErrosValidacao)
 
 def testaMLP(entrada, pesosV, pesosW):
     if len(entrada.shape) == 1:
@@ -344,6 +358,53 @@ def geraSaidaEsperada(arquivo):
 
     return saidaEsperada, letra, indice
 
+def geraSaidaEsperadaRec(arquivo):
+    if "_41_" in arquivo:
+        saidaEsperada = np.asarray(dic1Rec['_41_'])
+        letra = "A"
+        indice = 0
+    elif "_42_" in arquivo:
+        saidaEsperada = np.asarray(dic1Rec['_42_'])
+        letra = "B"
+        indice = 1
+    elif "_43_" in arquivo:
+        saidaEsperada = np.asarray(dic1Rec['_43_'])
+        letra = "C"
+        indice = 2
+    elif "_45_" in arquivo:
+        saidaEsperada = np.asarray(dic1Rec['_45_'])
+        letra = "E"
+        indice = 3
+    elif "_48_" in arquivo:
+        saidaEsperada = np.asarray(dic1Rec['_48_'])
+        letra = "H"
+        indice = 4
+    elif "_49_" in arquivo:
+        saidaEsperada = np.asarray(dic1Rec['_49_'])
+        letra = "I"
+        indice = 5
+    elif "_4b_" in arquivo:
+        saidaEsperada = np.asarray(dic1Rec['_4b_'])
+        letra = "K"
+        indice = 6
+    elif "_4d_" in arquivo:
+        saidaEsperada = np.asarray(dic1Rec['_4d_'])
+        letra = "M"
+        indice = 7
+    elif "_50_" in arquivo:
+        saidaEsperada = np.asarray(dic1Rec['_50_'])
+        letra = "P"
+        indice = 8
+    elif "_58_" in arquivo:
+        saidaEsperada = np.asarray(dic1Rec['_58_'])
+        letra = "X"
+        indice = 9
+    else:
+        print("\nERRO: arquivo de entrada nao faz parte do conjunto de letras! (nome errado ou alterado)\n")
+        return None, None, None
+
+    return saidaEsperada, letra, indice
+
 def somaColuna(matrizBase, vetorSoma, col):
     for i in range(len(matrizBase)):
         matrizBase[i][col] = matrizBase[i][col] + vetorSoma[i]
@@ -352,7 +413,7 @@ def somaColuna(matrizBase, vetorSoma, col):
 
 def main(argv):
 
-    if(len(argv) < 7):
+    if(len(argv) < 8):
         print("Numero errado de argumentos!")
         print("Usagem do rede_final.py:")
         print("argumento-01: Dataset utilizado (número 1, 2 ou 3)")
@@ -361,6 +422,7 @@ def main(argv):
         print("argumento-04: Numero de epocas que sera usado no MLP")
         print("argumento-05: Erro maximo da rede MLP")
         print("argumento-06: Numero de neuronios da camada escondida da rede MLP")
+        print("argumento-07: Decaimento da taxa de aprendizado (valores entre 0 e 1)")
         return
 
     if not(argv[2].startswith("HOG", 0, 3) or argv[2].startswith("LBP", 0, 3)):
@@ -377,16 +439,21 @@ def main(argv):
     epocas = int(argv[4])
     erroMaximo = float(argv[5])
     nroNeuronios = int(argv[6])
+    decaimentoTxAprendizado = float(argv[7])
     letras = 0
 
     #pastaBase = "/home/arthur/SI/IA/EP/" # pasta selecionada pelo usuario
-    pastaBase = "../../" 
+    #pastaBase = "../../" 
     #pastaBase = "/IA/dataset1/HOG1"
     #pastaBase = "/home/arthur/SI/IA/EP/"
     #pastaBase = "C:\\Users\\MICRO 2\\Desktop\\arthur"
     #pastaBase = "C:\\Users\\MICRO 3\\Desktop\\arthur"
-    #pastaBase = "C:\\Users\\Arthur\\Dropbox\\SI\\IA"
+    pastaBase = "C:\\Users\\Arthur\\Dropbox\\SI\\IA"
     
+    if escolhaDataset != 3:
+        print("VERSAO REC: argumento-01 (escolhaDataset) pode ser somente 3! Depois isso pode ser arrumado em versoes futuras")
+        return
+
     if escolhaDataset == 1:
         pastaBase = os.path.join(pastaBase, "dataset1")
         letras = 3
@@ -461,7 +528,8 @@ def main(argv):
         "rede_inicializacao_pesos : aleatoria",
         "rede_min_epocas : 0",
         "rede_max_epocas : " + str(epocas),
-        "rede_parada_antecipada : loop que vai de 0 a max epocas"
+        "rede_parada_antecipada : loop que vai de 0 a max epocas",
+        "modificacao_taxa_aprendizado : " + str(decaimentoTxAprendizado)
         ]
 
     for i in configText:
@@ -491,7 +559,7 @@ def main(argv):
         if len(entrada.shape) == 1:
             entrada.shape = (entrada.shape[0], 1)
         entrada = np.transpose(entrada) # transpoe de uma matriz linha para uma matriz coluna
-        saida,letra,indice = geraSaidaEsperada(arquivo)
+        saida,letra,indice = geraSaidaEsperadaRec(arquivo)
         auxMeta = np.array([saida,letra,indice,entrada])
         matrixTodasImagens = np.vstack([matrixTodasImagens,auxMeta])
 
@@ -637,9 +705,13 @@ def main(argv):
 
     vInicial = criaMatrizPesosDefault(matrixTodasImagens[0][3].shape[1],nroNeuronios)
     wInicial = criaMatrizPesosDefault(nroNeuronios,matrixTodasImagens[0][0].shape[0])
-    
+
+    global arqLog
+    arqLog = open(os.path.join(caminhoSaida,"log.txt"), "w") #para verificar erros
+    arqLog.write("inicio do arqlog\n")
     #folds
     for i in range(len(listaFolds)):
+        arqLog.write("conf de fold = " + str(i) + "\n")
         teste = np.copy(listaFolds[i])
         treinamento = np.zeros((0, 4))
         for j in range(len(listaFolds)):
@@ -649,7 +721,10 @@ def main(argv):
         vAux = np.copy(vInicial)
         wAux = np.copy(wInicial)
 
-        pesosV, pesosW, errosTreino, errosValidacao = MLP(treinamento,teste,alfa,epocas,erroMaximo,nroNeuronios, vAux, wAux)
+        errosTreino = []
+        errosValidacao = []
+
+        pesosV, pesosW, errosTreino, errosValidacao = MLP(treinamento,teste,alfa,epocas,erroMaximo,nroNeuronios, vAux, wAux,decaimentoTxAprendizado)
 
         plt.plot(errosTreino, label='Erro de treinamento')
         plt.plot(errosValidacao, label='Erro de validacao')
@@ -663,7 +738,7 @@ def main(argv):
 
         for k in range(len(errosTreino)-1):
             erro.write(str(k) + ';' + str(errosTreino[k]) + ';' + str(errosValidacao[k]) + '\n')
-        erro.write(str(k+1) + ';' + str(errosTreino[len(errosTreino)-1]) + ';' + str(errosValidacao[len(errosTreino)-1]) + '\n\n')
+        erro.write(str(len(errosTreino)-1) + ';' + str(errosTreino[len(errosTreino)-1]) + ';' + str(errosValidacao[len(errosTreino)-1]) + '\n\n')
 
         nomeModel = 'model' + str(i) + '.dat'
         model = open(os.path.join(caminhoSaida,nomeModel), "wb")
