@@ -118,27 +118,29 @@ def erroQuadratico(erros):
 def criaMatrizPesosDefault(linhas,colunas):
     return np.random.random((linhas,colunas))
 
-def MLP(dadosTreinamento,dadosTeste,taxaDeAprendizado,epocas,erroMaximo,nroNeuronios,pesosV,pesosW,decaimentoTxAprendizado):
+def MLP(dadosTreinamento,dadosTeste,taxaDeAprendizado,erroMaximo,nroNeuronios,pesosV,pesosW,decaimentoTxAprendizado):
     
     todosErrosEpocas = []
     todosErrosValidacao = []
     
     #TESTE TREINAMENTO
-    for epoca in range(epocas):
-        erroTreinamento = np.zeros((0,dadosTreinamento[0][0].shape[0]))
-        erroValidacao = np.zeros((0,dadosTreinamento[0][0].shape[0]))
+    for epoca in range(epocasMax):
+        #erroTreinamento = np.zeros((0,dadosTreinamento[0][0].shape[0]))
+        #erroValidacao = np.zeros((0,dadosTreinamento[0][0].shape[0]))
 
-        arqLog.write("   epoca = " + str(epoca) + "\n")
+        erroTreinamento = 0
+        erroValidacao = 0
+
+        arqLog.write("\nepoca = " + str(epoca) + "\n")
 
         for i in range(dadosTreinamento.shape[0]):     # loop de treinamento dos folds atuais
-            
-            X = dadosTreinamento[i][3]
+            X = np.copy(dadosTreinamento[i][3])
             if len(X.shape) == 1:
                 X.shape = (X.shape[0], 1)
 
             X = np.transpose(X)
 
-            T = dadosTreinamento[i][0]
+            T = np.copy(dadosTreinamento[i][0])
             
             if len(T.shape) == 1:
                 T.shape = (T.shape[0], 1)
@@ -160,7 +162,17 @@ def MLP(dadosTreinamento,dadosTeste,taxaDeAprendizado,epocas,erroMaximo,nroNeuro
 
             #erro (diferença entre o target)
             taxaDeErroSaida = T - Y
-            erroTreinamento = np.vstack([erroTreinamento, taxaDeErroSaida])
+            err = (taxaDeErroSaida * taxaDeErroSaida)
+            erroTreinamento = erroTreinamento + (np.sum(err)/err.shape[1])
+            if i==0:
+                arqLog.write("***TREINAMENTO***\n")
+                arqLog.write("      taxaDeErroSaida = " + str(taxaDeErroSaida) + "\n\n")
+                arqLog.write("      err = " + str(err) + "\n\n")
+                arqLog.write("   taxaDeErroSaida.shape = " + str(taxaDeErroSaida.shape) + "\n")
+                arqLog.write("   taxaDeErroSaida.shape[0] = " + str(taxaDeErroSaida.shape[0]) + "\t taxaDeErroSaida.shape[1] = " + str(taxaDeErroSaida.shape[1]) + "\n\n")
+                arqLog.write("   err.shape = " + str(err.shape) + "\n")
+                arqLog.write("   err.shape[0] = " + str(err.shape[0]) + "\t err.shape[1] = " + str(err.shape[1]) + "\n")
+                arqLog.write("\n")
                 
             #taxa de erro para segunda camada de pesos (δw[k])
             taxaDeErroW = taxaDeErroSaida * derSigmoid(Y_in)
@@ -182,39 +194,86 @@ def MLP(dadosTreinamento,dadosTeste,taxaDeAprendizado,epocas,erroMaximo,nroNeuro
 
             #v[i][j](new) = v[i][j](old) + ∆v[i][j]
             v += deltaV
-        
+
         #TESTE VALIDACAO
         for i in range(dadosTeste.shape[0]):     # loop de teste do fold de teste atual
-            X = dadosTeste[i][3]
-            T = dadosTeste[i][0]
+            X = np.copy(dadosTeste[i][3])
+            T = np.copy(dadosTeste[i][0])
+            #if T.shape==(10,1):
+            #    T = T.transpose
             Z_in = np.dot(X,pesosV)
             Z = sigmoid(Z_in)
             Y_in = np.dot(Z,pesosW)
             Y = sigmoid(Y_in)
-            erroValidacao = np.vstack([erroValidacao, (T - Y)])
+            #erroValidacao = np.vstack([erroValidacao, (T - Y)])
+            taxaDeErroV = (T - Y)
+            err = (taxaDeErroV * taxaDeErroV)
+            erroValidacao = erroValidacao + (np.sum(err)/err.shape[1])
+            if i==0:
+                arqLog.write("***VALIDAÇÃO***\n")
+                arqLog.write("      taxaDeErroV = " + str(taxaDeErroV) + "\n\n")
+                arqLog.write("      err = " + str(err) + "\n\n")
+                arqLog.write("   taxaDeErroV.shape = " + str(taxaDeErroV.shape) + "\n")
+                arqLog.write("   taxaDeErroV.shape[0] = " + str(taxaDeErroV.shape[0]) + "\t taxaDeErroV.shape[1] = " + str(taxaDeErroV.shape[1]) + "\n\n")
+                arqLog.write("   err.shape = " + str(err.shape) + "\n")
+                arqLog.write("   err.shape[0] = " + str(err.shape[0]) + "\t err.shape[1] = " + str(err.shape[1]) + "\n")
+                arqLog.write("\n\n=================================================\n\n")
+                arqLog.write("X.shape = " + str(X.shape) + "\n")
+                arqLog.write("T.shape = " + str(T.shape) + "\n")
+                arqLog.write("pesosV.shape = " + str(pesosV.shape) + "\n")
+                arqLog.write("pesosW.shape = " + str(pesosW.shape) + "\n")
+                arqLog.write("Z.shape = " + str(Z.shape) + "\n")
+                arqLog.write("Z_in.shape = " + str(Z_in.shape) + "\n")
+                arqLog.write("Y.shape = " + str(Y.shape) + "\n")
+                arqLog.write("Y_in.shape = " + str(Y_in.shape) + "\n")
+                arqLog.write("taxaDeErroV.shape = " + str(taxaDeErroV.shape) + "\n")
+                arqLog.write("err.shape = " + str(err.shape) + "\n")
+                arqLog.write("\n\n=================================================\n\n")
 
-        erroValidacao = np.asarray(erroValidacao)
+        #erroValidacao = np.asarray(erroValidacao)
 
-        erroTreinoEpoca = erroQuadratico(erroTreinamento)
-        erroValidacaoEpoca = erroQuadratico(erroValidacao)
+        #erroTreinoEpoca = erroQuadratico(erroTreinamento)
+        #erroValidacaoEpoca = erroQuadratico(erroValidacao)
 
-        todosErrosEpocas.append(erroTreinoEpoca)
-        todosErrosValidacao.append(erroValidacaoEpoca)
+        #todosErrosEpocas.append(erroTreinoEpoca)
+        #todosErrosValidacao.append(erroValidacaoEpoca)
+
+        mseT = erroTreinamento/(dadosTreinamento[0][0].shape[0] * dadosTreinamento.shape[0])
+        mseV = erroValidacao/(dadosTeste[0][0].shape[0] * dadosTeste.shape[0])
+
+        arqLog.write("   mseT = " + str(mseT) + "\n")
+        arqLog.write("   mseV = " + str(mseV) + "\n")
+        arqLog.write("\n")
+
+        arqLog.write("   erroTreinamento = " + str(erroTreinamento) + "\n")
+        arqLog.write("   erroValidacao = " + str(erroValidacao) + "\n")
+        arqLog.write("\n")
+
+        arqLog.write("   dadosTreinamento[0][0].shape[0] = " + str(dadosTreinamento[0][0].shape[0]) + "\n")
+        arqLog.write("   dadosTreinamento.shape[0] = " + str(dadosTreinamento.shape[0]) + "\n")
+        arqLog.write("   (dadosTreinamento[0][0].shape[0] * dadosTreinamento.shape[0]) = " + str((dadosTreinamento[0][0].shape[0] * dadosTreinamento.shape[0])) + "\n")
+        arqLog.write("\n")
+
+        arqLog.write("   dadosTeste[0][0].shape[0] = " + str(dadosTeste[0][0].shape[0]) + "\n")
+        arqLog.write("   dadosTeste.shape[0] = " + str(dadosTeste.shape[0]) + "\n")
+        arqLog.write("   (dadosTeste[0][0].shape[0] * dadosTeste.shape[0]) = " + str((dadosTeste[0][0].shape[0] * dadosTeste.shape[0])) + "\n")
+        arqLog.write("\n")
+
+        todosErrosEpocas.append(mseT)
+        todosErrosValidacao.append(mseV)
         
+        '''
         if(erroTreinoEpoca < erroMaximo): 
             print ("erro a baixo do maximo")
             return v, w, todosErrosEpocas, todosErrosValidacao
-        
-        # if epoca > 0:
-        #     if todosErrosValidacao[epoca] > todosErrosValidacao[epoca-1]:
-        #         print("SAIU PORQUE ERRO DE VALIDAÇÃO AUMENTOU")
-        #         print(todosErrosValidacao[epoca])
-        #         print(todosErrosValidacao[epoca-1])
-
-        #         todosErrosEpocas = np.asarray(todosErrosEpocas)
-        #         todosErrosValidacao = np.asarray(todosErrosValidacao)
-                 
-        #         return v, w, todosErrosEpocas, todosErrosValidacao
+        '''
+        if ((epoca > 0) and (todosErrosValidacao[epoca] > todosErrosValidacao[epoca-1]) and (epoca > epocasMin)):
+            arqLog.write("\n***SAIU PORQUE EPOCA > EPOCASMIN E ERRO DE VALIDAÇÃO AUMENTOU***\n")
+            
+            todosErrosEpocas = np.asarray(todosErrosEpocas)
+            todosErrosValidacao = np.asarray(todosErrosValidacao)
+             
+            return v, w, todosErrosEpocas, todosErrosValidacao
         
         np.random.shuffle(dadosTreinamento) # embaralha a ordem dos folds de treinamento
         np.random.shuffle(dadosTeste) # embaralha a ordem dos fold de treino
@@ -413,16 +472,17 @@ def somaColuna(matrizBase, vetorSoma, col):
 
 def main(argv):
 
-    if(len(argv) < 8):
+    if(len(argv) < 9):
         print("Numero errado de argumentos!")
         print("Usagem do rede_final.py:")
         print("argumento-01: Dataset utilizado (número 1, 2 ou 3)")
         print("argumento-02: Pasta com a entrada da rede, deve comecar por 'HOG' ou 'LBP' (sem aspas)")
         print("argumento-03: Alfa (taxa de aprendizado) a ser usado na rede")
-        print("argumento-04: Numero de epocas que sera usado no MLP")
-        print("argumento-05: Erro maximo da rede MLP")
-        print("argumento-06: Numero de neuronios da camada escondida da rede MLP")
-        print("argumento-07: Decaimento da taxa de aprendizado (valores entre 0 e 1)")
+        print("argumento-04: Numero minimo de epocas sque sera usado no MLP")
+        print("argumento-05: Numero maximo de epocas sque sera usado no MLP")
+        print("argumento-06: Erro maximo da rede MLP")
+        print("argumento-07: Numero de neuronios da camada escondida da rede MLP")
+        print("argumento-08: Decaimento da taxa de aprendizado (valores entre 0 e 1)")
         return
 
     if not(argv[2].startswith("HOG", 0, 3) or argv[2].startswith("LBP", 0, 3)):
@@ -432,14 +492,17 @@ def main(argv):
     
     global dic1
     global dic2
-    
+    global epocasMin
+    global epocasMax
+
     escolhaDataset = int(argv[1])
     extrator = str(argv[2])
     alfa = float(argv[3])
-    epocas = int(argv[4])
-    erroMaximo = float(argv[5])
-    nroNeuronios = int(argv[6])
-    decaimentoTxAprendizado = float(argv[7])
+    epocasMin = int(argv[4])
+    epocasMax = int(argv[5])
+    erroMaximo = float(argv[6])
+    nroNeuronios = int(argv[7])
+    decaimentoTxAprendizado = float(argv[8])
     letras = 0
 
     #pastaBase = "/home/arthur/SI/IA/EP/" # pasta selecionada pelo usuario
@@ -526,9 +589,9 @@ def main(argv):
         "rede_camada_Y_neuronios : " + str(letras),
         "rede_camada_Y_funcao_de_ativacao : sigmoide",
         "rede_inicializacao_pesos : aleatoria",
-        "rede_min_epocas : 0",
-        "rede_max_epocas : " + str(epocas),
-        "rede_parada_antecipada : loop que vai de 0 a max epocas",
+        "rede_min_epocas : " + str(epocasMin),
+        "rede_max_epocas : " + str(epocasMax),
+        "rede_parada_antecipada : epoca atual > minimo de epocas e aumento no erro de validacao",
         "modificacao_taxa_aprendizado : " + str(decaimentoTxAprendizado)
         ]
 
@@ -711,7 +774,7 @@ def main(argv):
     arqLog.write("inicio do arqlog\n")
     #folds
     for i in range(len(listaFolds)):
-        arqLog.write("conf de fold = " + str(i) + "\n")
+        arqLog.write("\nconf de fold = " + str(i) + "\n")
         teste = np.copy(listaFolds[i])
         treinamento = np.zeros((0, 4))
         for j in range(len(listaFolds)):
@@ -721,10 +784,7 @@ def main(argv):
         vAux = np.copy(vInicial)
         wAux = np.copy(wInicial)
 
-        errosTreino = []
-        errosValidacao = []
-
-        pesosV, pesosW, errosTreino, errosValidacao = MLP(treinamento,teste,alfa,epocas,erroMaximo,nroNeuronios, vAux, wAux,decaimentoTxAprendizado)
+        pesosV, pesosW, errosTreino, errosValidacao = MLP(treinamento,teste,alfa,erroMaximo,nroNeuronios, vAux, wAux,decaimentoTxAprendizado)
 
         plt.plot(errosTreino, label='Erro de treinamento')
         plt.plot(errosValidacao, label='Erro de validacao')
