@@ -107,6 +107,9 @@ dic1Rec = {'_41_': (1,0,0,0,0,0,0,0,0,0),
 def sigmoid(x):
   return 1 / (1 + np.exp(-x))
 
+def tangenteHiperbolica(t):
+    return ((np.exp(t) - np.exp(-t))/(np.exp(-t) + np.exp(t)))
+
 def testaMLP(entrada, pesosV, pesosW):
     if len(entrada.shape) == 1:
         entrada.shape = (entrada.shape[0],1)
@@ -115,11 +118,17 @@ def testaMLP(entrada, pesosV, pesosW):
 
     Z_in = np.dot(X,pesosV)
 
-    Z = sigmoid(Z_in)
+    if (ativacao == "sig"):
+        Z = sigmoid(Z_in)
+    elif (ativacao == "tanh"):
+        Z = tangenteHiperbolica(Z_in)
 
     Y_in = np.dot(Z,pesosW)
 
-    Y = sigmoid(Y_in)
+    if (ativacao == "sig"):
+        Y = sigmoid(Y_in)
+    elif (ativacao == "tanh"):
+        Y = tangenteHiperbolica(Y_in)
 
     return Y
 
@@ -317,12 +326,13 @@ def acuraciaClasse(nroLetra, matriz):
 
 def main(argv):
 
-    if(len(argv) < 4):
+    if(len(argv) < 5):
         print("Numero errado de argumentos!")
         print("Usagem do rede_final.py:")
         print("argumento-01: Dataset utilizado (número 1, 2 ou 3)")
         print("argumento-02: Pasta com a entrada da rede, deve comecar por 'HOG' ou 'LBP' (sem aspas)")
         print("argumento-03: Pasta com a execucao da rede (que contem os arquivos de saida da rede), sem aspas")
+        print("argumento-04: Funcao de ativacao: sig = sigmoide, tanh = tangente hiperbolica")
         return
 
     if not(argv[2].startswith("HOG", 0, 3) or argv[2].startswith("LBP", 0, 3)):
@@ -333,10 +343,16 @@ def main(argv):
     global dic1
     global dic2
     global dic1Rec
+    global ativacao
 
     escolhaDataset = int(argv[1])
     extrator = str(argv[2])
     execucao = str(argv[3])
+    ativacao = str(argv[4])
+
+    if (ativacao not in ["sig", "tanh"]):
+        print("Funcao de ativacao errada! Escolha 'sig' ou 'tanh' (sem aspas)")
+        return
 
     ts = time.time()
     st = datetime.datetime.fromtimestamp(ts).strftime('%d/%m/%Y %H:%M:%S')

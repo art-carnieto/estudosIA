@@ -112,6 +112,12 @@ def sigmoid(x):
 def derSigmoid(x):
     return np.exp(x) / np.power((np.exp(x)+1),2)
 
+def tangenteHiperbolica(t):
+    return ((np.exp(t) - np.exp(-t))/(np.exp(-t) + np.exp(t)))
+
+def derTangenteHiperbolica(t):
+    return (4/(np.power((np.exp(-t) + np.exp(t)),2)))
+
 def erroQuadratico(erros):
     return np.sum(np.power(erros,2))/(2*len(erros))
 
@@ -125,9 +131,6 @@ def MLP(dadosTreinamento,dadosTeste,taxaDeAprendizado,erroMaximo,nroNeuronios,pe
     
     #TESTE TREINAMENTO
     for epoca in range(epocasMax):
-        #erroTreinamento = np.zeros((0,dadosTreinamento[0][0].shape[0]))
-        #erroValidacao = np.zeros((0,dadosTreinamento[0][0].shape[0]))
-
         erroTreinamento = 0
         erroValidacao = 0
 
@@ -154,18 +157,25 @@ def MLP(dadosTreinamento,dadosTeste,taxaDeAprendizado,erroMaximo,nroNeuronios,pe
             #calculo dos valores e ativação
             Z_in = np.dot(X,v)
 
-            Z = sigmoid(Z_in)
+            if (ativacao == "sig"):
+                Z = sigmoid(Z_in)
+            elif (ativacao == "tanh"):
+                Z = tangenteHiperbolica(Z_in)
 
             Y_in = np.dot(Z,w)
 
-            Y = sigmoid(Y_in)
+            if (ativacao == "sig"):
+                Y = sigmoid(Y_in)
+            elif (ativacao == "tanh"):
+                Y = tangenteHiperbolica(Y_in)
 
             #erro (diferença entre o target)
             taxaDeErroSaida = T - Y
             err = (taxaDeErroSaida * taxaDeErroSaida)
             erroTreinamento = erroTreinamento + (np.sum(err)/err.shape[1])
-            if i==0:
+            if i%1000==0:
                 arqLog.write("***TREINAMENTO***\n")
+                arqLog.write(" i = " + str(i) + "\n")
                 arqLog.write("      taxaDeErroSaida = " + str(taxaDeErroSaida) + "\n\n")
                 arqLog.write("      err = " + str(err) + "\n\n")
                 arqLog.write("   taxaDeErroSaida.shape = " + str(taxaDeErroSaida.shape) + "\n")
@@ -175,8 +185,10 @@ def MLP(dadosTreinamento,dadosTeste,taxaDeAprendizado,erroMaximo,nroNeuronios,pe
                 arqLog.write("\n")
                 
             #taxa de erro para segunda camada de pesos (δw[k])
-            taxaDeErroW = taxaDeErroSaida * derSigmoid(Y_in)
-            
+            if (ativacao == "sig"):
+                taxaDeErroW = taxaDeErroSaida * derSigmoid(Y_in)
+            elif (ativacao == "tanh"):
+                taxaDeErroW = taxaDeErroSaida * derTangenteHiperbolica(Y_in)
             #∆w[j][k] = α*δw[k]*Z[j]
             deltaW = taxaDeAprendizado * np.dot(np.transpose(Z),taxaDeErroW)
 
@@ -184,8 +196,10 @@ def MLP(dadosTreinamento,dadosTeste,taxaDeAprendizado,erroMaximo,nroNeuronios,pe
             taxaDeErroEscondida = taxaDeErroW.dot(np.transpose(w))
 
             # δv[j] = δv_in[j] f′(z_in[j])
-            taxaDeErroV = taxaDeErroEscondida * derSigmoid(Z_in)
-
+            if (ativacao == "sig"):
+                taxaDeErroV = taxaDeErroEscondida * derSigmoid(Z_in)
+            elif (ativacao == "tanh"):
+                taxaDeErroV = taxaDeErroEscondida * derTangenteHiperbolica(Z_in)
             #∆v[i][j] = αδv[j]x[i]
             deltaV = taxaDeAprendizado * np.dot(np.transpose(X),taxaDeErroV)
 
@@ -199,18 +213,23 @@ def MLP(dadosTreinamento,dadosTeste,taxaDeAprendizado,erroMaximo,nroNeuronios,pe
         for i in range(dadosTeste.shape[0]):     # loop de teste do fold de teste atual
             X = np.copy(dadosTeste[i][3])
             T = np.copy(dadosTeste[i][0])
-            #if T.shape==(10,1):
-            #    T = T.transpose
             Z_in = np.dot(X,pesosV)
-            Z = sigmoid(Z_in)
+            if (ativacao == "sig"):
+                Z = sigmoid(Z_in)
+            elif (ativacao == "tanh"):
+                Z = tangenteHiperbolica(Z_in)
             Y_in = np.dot(Z,pesosW)
-            Y = sigmoid(Y_in)
+            if (ativacao == "sig"):
+                Y = sigmoid(Y_in)
+            elif (ativacao == "tanh"):
+                Y = tangenteHiperbolica(Y_in)
             #erroValidacao = np.vstack([erroValidacao, (T - Y)])
             taxaDeErroV = (T - Y)
             err = (taxaDeErroV * taxaDeErroV)
             erroValidacao = erroValidacao + (np.sum(err)/err.shape[1])
-            if i==0:
+            if i%500 == 0:
                 arqLog.write("***VALIDAÇÃO***\n")
+                arqLog.write(" i = " + str(i) + "\n")
                 arqLog.write("      taxaDeErroV = " + str(taxaDeErroV) + "\n\n")
                 arqLog.write("      err = " + str(err) + "\n\n")
                 arqLog.write("   taxaDeErroV.shape = " + str(taxaDeErroV.shape) + "\n")
@@ -472,10 +491,10 @@ def somaColuna(matrizBase, vetorSoma, col):
 
 def main(argv):
 
-    if(len(argv) < 9):
+    if(len(argv) < 10):
         print("Numero errado de argumentos!")
         print("Usagem do rede_final.py:")
-        print("argumento-01: Dataset utilizado (número 1, 2 ou 3)")
+        print("argumento-01: Dataset utilizado (numero 1, 2 ou 3)")
         print("argumento-02: Pasta com a entrada da rede, deve comecar por 'HOG' ou 'LBP' (sem aspas)")
         print("argumento-03: Alfa (taxa de aprendizado) a ser usado na rede")
         print("argumento-04: Numero minimo de epocas sque sera usado no MLP")
@@ -483,6 +502,7 @@ def main(argv):
         print("argumento-06: Erro maximo da rede MLP")
         print("argumento-07: Numero de neuronios da camada escondida da rede MLP")
         print("argumento-08: Decaimento da taxa de aprendizado (valores entre 0 e 1)")
+        print("argumento-09: Funcao de ativacao: sig = sigmoide, tanh = tangente hiperbolica")
         return
 
     if not(argv[2].startswith("HOG", 0, 3) or argv[2].startswith("LBP", 0, 3)):
@@ -494,6 +514,7 @@ def main(argv):
     global dic2
     global epocasMin
     global epocasMax
+    global ativacao
 
     escolhaDataset = int(argv[1])
     extrator = str(argv[2])
@@ -503,6 +524,7 @@ def main(argv):
     erroMaximo = float(argv[6])
     nroNeuronios = int(argv[7])
     decaimentoTxAprendizado = float(argv[8])
+    ativacao = str(argv[9])
     letras = 0
 
     #pastaBase = "/home/arthur/SI/IA/EP/" # pasta selecionada pelo usuario
@@ -515,6 +537,10 @@ def main(argv):
     
     if escolhaDataset != 3:
         print("VERSAO REC: argumento-01 (escolhaDataset) pode ser somente 3! Depois isso pode ser arrumado em versoes futuras")
+        return
+
+    if (ativacao not in ["sig", "tanh"]):
+        print("Funcao de ativacao errada! Escolha 'sig' ou 'tanh' (sem aspas)")
         return
 
     if escolhaDataset == 1:
@@ -584,10 +610,21 @@ def main(argv):
 
     configText += [
         "rede_alpha : " + str(alfa),
-        "rede_camada_Z_neuronios : " + str(nroNeuronios),
-        "rede_camada_Z_funcao_de_ativacao : sigmoide",
-        "rede_camada_Y_neuronios : " + str(letras),
-        "rede_camada_Y_funcao_de_ativacao : sigmoide",
+        "rede_camada_Z_neuronios : " + str(nroNeuronios)
+        ]
+
+    if (ativacao == "sig"):
+        configText += ["rede_camada_Z_funcao_de_ativacao : sigmoide"]
+    elif (ativacao == "tanh"):
+        configText += ["rede_camada_Z_funcao_de_ativacao : tangente hiperbolica"]
+
+    configText += ["rede_camada_Y_neuronios : " + str(letras)]
+    
+    if (ativacao == "sig"):
+        configText += ["rede_camada_Y_funcao_de_ativacao : sigmoide"]
+    elif (ativacao == "tanh"):
+        configText += ["rede_camada_Y_funcao_de_ativacao : tangente hiperbolica"]
+    configText += [
         "rede_inicializacao_pesos : aleatoria",
         "rede_min_epocas : " + str(epocasMin),
         "rede_max_epocas : " + str(epocasMax),
